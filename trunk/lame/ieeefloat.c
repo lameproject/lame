@@ -44,6 +44,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.2  2000/02/19 13:32:30  afaber
+ * Fixed many warning messages when compiling with MSVC
+ *
  * Revision 1.1.1.1  1999/11/24 08:42:58  markt
  * initial checkin of LAME
  * Starting with LAME 3.57beta with some modifications
@@ -53,6 +56,7 @@
  *
  */
 
+#include        <limits.h>
 #include	<stdio.h>
 #include	<math.h>
 #include	"ieeefloat.h"
@@ -118,7 +122,7 @@ ConvertFromIeeeSingle(char* bytes)
 		}
 	}
 
-	if (bits & 0x80000000)
+	if (bits & LONG_MIN)
 		return -f;
 	else
 		return f;
@@ -135,7 +139,7 @@ ConvertToIeeeSingle(defdouble num, char* bytes)
 	register long bits;
 
 	if (num < 0) {	/* Can't distinguish a negative zero */
-		sign = 0x80000000;
+		sign = LONG_MIN;
 		num *= -1;
 	} else {
 		sign = 0;
@@ -251,7 +255,7 @@ ConvertToIeeeDouble(defdouble num, char *bytes)
 	long	first, second;
 
 	if (num < 0) {	/* Can't distinguish a negative zero */
-		sign = 0x80000000;
+		sign = LONG_MIN;
 		num *= -1;
 	} else {
 		sign = 0;

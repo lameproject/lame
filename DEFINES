@@ -1,4 +1,4 @@
-$Id: DEFINES,v 1.14 2001-02-20 10:41:05 aleidinger Exp $
+$Id: DEFINES,v 1.15 2001-02-27 11:39:40 aleidinger Exp $
 
 USE_FFT3DN:
  - enable 3DNow code for the FFT
@@ -8,9 +8,6 @@ KLEMM_14: (missing)
 
 KLEMM_36:
  - portability fixes in the IO code
-
-KLEMM_42:
- - new bandwith calculation
 
 KLEMM_43:
  - cleaned up tables in tables.c

@@ -5,6 +5,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.3  2000/02/01 11:26:32  takehiro
+ * scalefactor's structure changed
+ *
  * Revision 1.2  1999/12/03 09:45:30  takehiro
  * little bit cleanup
  *
@@ -24,7 +27,6 @@
 #include "util.h"
 
 void III_format_bitstream( int              bitsPerFrame,
-			   frame_params     *in_fr_ps,
 			   int              l3_enc[2][2][576],
                            III_side_info_t  *l3_side,
 			   III_scalefac_t   scalefac[2][2],

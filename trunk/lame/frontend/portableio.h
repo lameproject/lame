@@ -49,6 +49,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.2  2000/09/17 04:19:09  cisc
+ * conformed all this-is-included-defines to match 'project_file_name' style
+ *
  * Revision 1.1.1.1  1999/11/24 08:43:37  markt
  * initial checkin of LAME
  * Starting with LAME 3.57beta with some modifications

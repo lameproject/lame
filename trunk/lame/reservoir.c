@@ -5,6 +5,10 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.2  1999/12/17 04:24:07  markt
+ * added the --nores option to disable the bitreservoir.  only usefull
+ * in special circumstances
+ *
  * Revision 1.1.1.1  1999/11/24 08:43:39  markt
  * initial checkin of LAME
  * Starting with LAME 3.57beta with some modifications
@@ -91,7 +95,7 @@ ResvFrameBegin( frame_params *fr_ps, III_side_info_t *l3_side, int mean_bits, in
 	ResvMax = 0;
     else
 	ResvMax = 7680 - frameLength;
-    if (disable_reservoir) ResvMax=0;
+    if (gf.disable_reservoir) ResvMax=0;
 
 
     /*

@@ -5,6 +5,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.21  2000/01/13 02:07:31  markt
+ * moved the rest of the global variables into gf struct
+ *
  * Revision 1.20  2000/01/09 23:10:24  markt
  * moved more globalflags into the gf. struct
  *
@@ -146,7 +149,7 @@ void L3para_read( FLOAT8 sfreq, int numlines[CBANDS],int numlines_s[CBANDS], int
 
  
 
-void L3psycho_anal( short int *buffer[2], int stereo,
+void L3psycho_anal( short int *buffer[2],
 		    int gr_out , layer * info,
 		    FLOAT8 sfreq, int check_ms_stereo, 
                     FLOAT8 *ms_ratio,
@@ -389,7 +392,7 @@ void L3psycho_anal( short int *buffer[2], int stereo,
 
   
   
-  numchn=stereo;
+  numchn = gf.stereo;
   if (gf.highq && (info->mode == MPG_MD_JOINT_STEREO)) numchn=4;
   for (chn=0; chn<numchn; chn++) {
 
@@ -907,7 +910,7 @@ void L3psycho_anal( short int *buffer[2], int stereo,
    * determin final block type
    ***************************************************************/
   
-  for (chn=0; chn<stereo; chn++) {
+  for (chn=0; chn<gf.stereo; chn++) {
     blocktype[chn] = NORM_TYPE;
   }
   
@@ -928,7 +931,7 @@ void L3psycho_anal( short int *buffer[2], int stereo,
   
   /* update the blocktype of the previous granule, since it depends on what
    * happend in this granule */
-  for (chn=0; chn<stereo; chn++) {
+  for (chn=0; chn<gf.stereo; chn++) {
     if ( uselongblock[chn])
       {				/* no attack : use long blocks */
 	switch( blocktype_old[chn] ) 

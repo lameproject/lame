@@ -44,6 +44,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.4  2000/06/07 22:56:02  sbellon
+ * added support for FPA10 hardware (RISC OS only)
+ *
  * Revision 1.3  2000/02/21 23:05:05  markt
  * some 64bit DEC Alpha patches
  *

@@ -5,6 +5,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.6  2000/01/13 16:26:50  takehiro
+ * moved info.stereo into gf.stereo
+ *
  * Revision 1.5  2000/01/12 14:30:54  takehiro
  * more simple & fast scalefac_scale use
  * and mode_gr is moved into gf structure.
@@ -68,7 +71,7 @@ ResvFrameBegin( frame_params *fr_ps, III_side_info_t *l3_side, int mean_bits, in
 {
     layer *info;
     int fullFrameBits;
-    int expectedResvSize, resvLimit;
+    int resvLimit;
 
     if (gf.frameNum==0) {
       ResvSize=0;
@@ -91,11 +94,11 @@ ResvFrameBegin( frame_params *fr_ps, III_side_info_t *l3_side, int mean_bits, in
       agree with our reservoir size
     */
 
-    expectedResvSize = l3_side->main_data_begin * 8;
 #ifdef DEBUG
     fprintf( stderr, ">>> ResvSize = %d\n", ResvSize );
 #endif
-    assert( expectedResvSize == ResvSize );
+    /* check expected resvsize */
+    assert( (l3_side->main_data_begin * 8) == ResvSize );
     fullFrameBits = mean_bits * gf.mode_gr + ResvSize;
 
     /*

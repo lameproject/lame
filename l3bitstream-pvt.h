@@ -5,6 +5,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.4  2000/03/21 23:02:17  markt
+ * replaced all "gf." by gfp->
+ *
  * Revision 1.3  2000/02/01 11:26:32  takehiro
  * scalefactor's structure changed
  *
@@ -33,7 +36,7 @@ static void encodeMainData( lame_global_flags *gfp,
 
 static void drain_into_ancillary_data( int lengthInBits );
 
-static void Huffmancodebits( BF_PartHolder **pph, int *ix, gr_info *gi );
+static void Huffmancodebits(lame_global_flags *gfp, BF_PartHolder **pph, int *ix, gr_info *gi );
 
 
 #endif

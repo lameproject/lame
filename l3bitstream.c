@@ -5,6 +5,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.5  1999/12/26 14:48:55  takehiro
+ * some foolish bug is removed :)
+ *
  * Revision 1.4  1999/12/03 10:11:50  takehiro
  * foolish mistake has removed :)
  *
@@ -640,7 +643,6 @@ Huffmancodebits( BF_PartHolder **pph, int *ix, gr_info *gi )
 		    scalefac_index += gi->region1_count + 1;
 		    assert( scalefac_index < 23 );    
 		    region2Start = scalefac[ scalefac_index ];
-		    /*	    assert( region1Start == gi->address1 );*/
 		}
 
 		for ( i = 0; i < bigvalues; i += 2 )

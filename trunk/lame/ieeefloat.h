@@ -1,5 +1,5 @@
-#ifndef IEEE_FLOAT_H__
-#define IEEE_FLOAT_H__
+#ifndef LAME_IEEEFLOAT_H
+#define LAME_IEEEFLOAT_H
 /* Copyright (C) 1988-1991 Apple Computer, Inc.
  * All Rights Reserved.
  *
@@ -46,6 +46,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.2  2000/06/07 22:56:02  sbellon
+ * added support for FPA10 hardware (RISC OS only)
+ *
  * Revision 1.1.1.1  1999/11/24 08:42:58  markt
  * initial checkin of LAME
  * Starting with LAME 3.57beta with some modifications

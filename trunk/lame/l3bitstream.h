@@ -5,6 +5,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.5  2000/03/21 23:02:17  markt
+ * replaced all "gf." by gfp->
+ *
  * Revision 1.4  2000/03/14 20:45:04  markt
  * removed "info" sturct.   Removing fr_ps struct
  *
@@ -32,9 +35,7 @@
 void III_format_bitstream( lame_global_flags *gfp,
 			   int              bitsPerFrame,
 			   int              l3_enc[2][2][576],
-                           III_side_info_t  *l3_side,
-			   III_scalefac_t   scalefac[2][2],
-			   Bit_stream_struc *in_bs);
+			   III_scalefac_t   scalefac[2][2]);
 
 int HuffmanCode( int table_select, int x, int y, unsigned *code, unsigned int *extword, int *codebits, int *extbits );
 void III_FlushBitstream(void);

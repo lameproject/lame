@@ -160,9 +160,6 @@ void L3psycho_anal( short int *buffer[2], int stereo,
   static FLOAT8	nb_1[4][CBANDS], nb_2[4][CBANDS];
   static FLOAT8  s3_s[CBANDS][CBANDS];
   
-  static int cw_upper_index;
-  static int cw_lower_index;
-  
 /* Scale Factor Bands */
   static int	bu_l[SBPSY_l],bo_l[SBPSY_l] ;
   static int	bu_s[SBPSY_s],bo_s[SBPSY_s] ;
@@ -204,31 +201,6 @@ void L3psycho_anal( short int *buffer[2], int stereo,
     memset (rx_sav,0, sizeof(rx_sav));
     memset (ax_sav,0, sizeof(ax_sav));
     memset (bx_sav,0, sizeof(bx_sav));
-    
-    
-    /* set suitable index for unpredicitability measure 
-       ISO: By sacrificing performance, this measure can be calculated
-            on only a lower portion of the frequency lines.  
-            Calculations should be done from DC to at least 3kHz and
-            preferably to 7kHz.  An upper limit of less than 5.5kHz may
-            considerably reduce performance from that obtained during
-            the subjective testing of the audio algorithm.  
-            ...
-            Best results will be obtained by calculating cw up to 20kHz.
-    */
-    if( psyModel == 0 ) {
-      if( highq ) {
-        cw_lower_index = 512; /* the whole frequency range */
-      } else {
-        cw_lower_index = 1024.0*7000.0/sfreq;
-      } 
-      cw_lower_index &= 0xfffc; /* has to be devisible through 4 */
-      cw_lower_index = Max( 6, Min( cw_upper_index+2, 510 ));
-      cw_upper_index = cw_lower_index;
-    } else {
-      cw_lower_index = 6;
-      cw_upper_index = 206;
-    }
     
     
     
@@ -400,7 +372,7 @@ void L3psycho_anal( short int *buffer[2], int stereo,
     /**********************************************************************
      *    compute unpredicatability of first six spectral lines            * 
      **********************************************************************/
-    for ( j = 0; j < cw_lower_index; j++ )
+    for ( j = 0; j < 6; j++ )
       {	 /* calculate unpredictability measure cw */
 	FLOAT8 an, a1, a2;
 	FLOAT8 bn, b1, b2;
@@ -462,7 +434,7 @@ void L3psycho_anal( short int *buffer[2], int stereo,
     /**********************************************************************
      *     compute unpredicatibility of next 200 spectral lines            *
      **********************************************************************/ 
-    for ( j = cw_lower_index; j < cw_upper_index; j += 4 )
+    for ( j = 6; j < 206; j += 4 )
       {/* calculate unpredictability measure cw */
 	FLOAT8 rn, r1, r2;
 	FLOAT8 numre, numim, den;
@@ -530,7 +502,7 @@ void L3psycho_anal( short int *buffer[2], int stereo,
     /**********************************************************************
      *    Set unpredicatiblility of remaining spectral lines to 0.4  206..513 *
      **********************************************************************/
-    for ( j = cw_upper_index; j < HBLKSIZE; j++ )
+    for ( j = 206; j < HBLKSIZE; j++ )
       cw[j] = 0.4;
     
     

@@ -5,6 +5,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.13  2000/02/19 13:32:30  afaber
+ * Fixed many warning messages when compiling with MSVC
+ *
  * Revision 1.12  2000/02/01 11:26:32  takehiro
  * scalefactor's structure changed
  *
@@ -718,9 +721,9 @@ Huffmancodebits( BF_PartHolder **pph, int *ix, gr_info *gi )
 	  tables, we will pad with ones
 	*/
 	while ( stuffingWords-- )
-	    *pph = BF_addEntry( *pph, ~0, 32 );
+	    *pph = BF_addEntry( *pph, ~(u_int)0, 32 );
 	if ( remainingBits )
-	    *pph = BF_addEntry( *pph, ~0, remainingBits );
+	    *pph = BF_addEntry( *pph, ~(u_int)0, remainingBits );
 	bitsWritten += stuffingBits;
     }
     assert( bitsWritten == (int)(gi->part2_3_length - gi->part2_length) );

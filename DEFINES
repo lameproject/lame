@@ -1,4 +1,4 @@
-$Id: DEFINES,v 1.7 2000-12-11 16:03:06 aleidinger Exp $
+$Id: DEFINES,v 1.8 2000-12-19 13:09:23 aleidinger Exp $
 
 RH_VALIDATE_MS:
  avoids to switch from LR to MS when the perceptual entropy indicates
@@ -54,6 +54,9 @@ KLEMM_36:
 
 KLEMM_42:
  new bandwith calculation
+
+KLEMM_43:
+ cleaned up tables in tables.c
 
 KLEMM_44: (missing)
  enable code in pcm.c (new API)

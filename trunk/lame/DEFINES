@@ -1,4 +1,8 @@
-$Id: DEFINES,v 1.21 2001-12-22 13:32:21 aleidinger Exp $
+$Id: DEFINES,v 1.22 2002-06-17 17:19:26 domd Exp $
+
+USE_FAST_LOG:
+ - use of log/log10 approximation (uses IEEE754 float format)
+   (absolute precision of log10 is then around 1e-6)
 
 KLEMM_36:
  - portability fixes in the IO code

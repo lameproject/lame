@@ -5,6 +5,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.4  2000/01/05 10:04:20  markt
+ * Check for Xing header in mp3 input files
+ *
  * Revision 1.3  1999/12/21 08:18:51  markt
  * Bug fix in Mid/Side masking thresholds
  *
@@ -80,9 +83,7 @@ int /*	unsigned */ subblock_gain[3];
 	unsigned part2_length;
 	unsigned sfb_lmax;
 	unsigned sfb_smax;
-	unsigned address1;
-	unsigned address2;
-	unsigned address3;
+	unsigned count1bits;
 	FLOAT8 quantizerStepSize;
 	/* added for LSF */
 	unsigned *sfb_partition_table;

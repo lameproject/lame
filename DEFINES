@@ -1,7 +1,4 @@
-$Id: DEFINES,v 1.18 2001-06-07 22:12:43 robert Exp $
-
-USE_FFT3DN:
- - enable 3DNow code for the FFT
+$Id: DEFINES,v 1.19 2001-08-27 20:56:31 aleidinger Exp $
 
 KLEMM_36:
  - portability fixes in the IO code

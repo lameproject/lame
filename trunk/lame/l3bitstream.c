@@ -5,6 +5,10 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.7  2000/01/12 14:30:54  takehiro
+ * more simple & fast scalefac_scale use
+ * and mode_gr is moved into gf structure.
+ *
  * Revision 1.6  2000/01/09 10:54:56  takehiro
  * All Huffman code search algorithm is implemented.
  * (-h option to enable this)
@@ -50,7 +54,6 @@
 #include "l3bitstream-pvt.h"
 #include "globalflags.h"
 
-static int stereo = 1;
 static frame_params *fr_ps  = NULL;
 static Bit_stream_struc *bs = NULL;
 
@@ -96,7 +99,6 @@ III_format_bitstream( int              bitsPerFrame,
     int gr, ch;
     fr_ps = in_fr_ps;
     bs = in_bs;
-    stereo = fr_ps->stereo;
 
     if ( frameData == NULL )
     {
@@ -141,15 +143,15 @@ III_format_bitstream( int              bitsPerFrame,
     */
     frameData->frameLength = bitsPerFrame;
     frameData->nGranules   = gf.mode_gr;
-    frameData->nChannels   = stereo;
+    frameData->nChannels   = gf.stereo;
     frameData->header      = headerPH->part;
     frameData->frameSI     = frameSIPH->part;
 
-    for ( ch = 0; ch < stereo; ch++ )
+    for ( ch = 0; ch < gf.stereo; ch++ )
 	frameData->channelSI[ch] = channelSIPH[ch]->part;
 
     for ( gr = 0; gr < gf.mode_gr; gr++ )
-	for ( ch = 0; ch < stereo; ch++ )
+	for ( ch = 0; ch < gf.stereo; ch++ )
 	{
 	    frameData->spectrumSI[gr][ch]   = spectrumSIPH[gr][ch]->part;
 	    frameData->scaleFactors[gr][ch] = scaleFactorsPH[gr][ch]->part;
@@ -187,18 +189,18 @@ encodeMainData( int              l3_enc[2][2][576],
 
 
     for ( gr = 0; gr < gf.mode_gr; gr++ )
-	for ( ch = 0; ch < stereo; ch++ )
+	for ( ch = 0; ch < gf.stereo; ch++ )
 	    scaleFactorsPH[gr][ch]->part->nrEntries = 0;
 
     for ( gr = 0; gr < gf.mode_gr; gr++ )
-	for ( ch = 0; ch < stereo; ch++ )
+	for ( ch = 0; ch < gf.stereo; ch++ )
 	    codedDataPH[gr][ch]->part->nrEntries = 0;
 
     if ( info->version == 1 )
     {  /* MPEG 1 */
 	for ( gr = 0; gr < 2; gr++ )
 	{
-	    for ( ch = 0; ch < stereo; ch++ )
+	    for ( ch = 0; ch < gf.stereo; ch++ )
 	    {
 		BF_PartHolder **pph = &scaleFactorsPH[gr][ch];		
 		gr_info *gi = &(si->gr[gr].ch[ch].tt);
@@ -260,7 +262,7 @@ encodeMainData( int              l3_enc[2][2][576],
     else
     {  /* MPEG 2 */
 	gr = 0;
-	for ( ch = 0; ch < stereo; ch++ )
+	for ( ch = 0; ch < gf.stereo; ch++ )
 	{
 	    BF_PartHolder **pph = &scaleFactorsPH[gr][ch];		
 	    gr_info *gi = &(si->gr[gr].ch[ch].tt);
@@ -362,23 +364,23 @@ static int encodeSideInfo( III_side_info_t  *si )
 
     frameSIPH->part->nrEntries = 0;
 
-    for (ch = 0; ch < stereo; ch++ )
+    for (ch = 0; ch < gf.stereo; ch++ )
 	channelSIPH[ch]->part->nrEntries = 0;
 
     for ( gr = 0; gr < gf.mode_gr; gr++ )
-	for ( ch = 0; ch < stereo; ch++ )
+	for ( ch = 0; ch < gf.stereo; ch++ )
 	    spectrumSIPH[gr][ch]->part->nrEntries = 0;
 
     if ( info->version == 1 )
     {  /* MPEG1 */
 	frameSIPH = CRC_BF_addEntry( frameSIPH, si->main_data_begin, 9 );
 
-	if ( stereo == 2 )
+	if ( gf.stereo == 2 )
 	    frameSIPH = CRC_BF_addEntry( frameSIPH, si->private_bits, 3 );
 	else
 	    frameSIPH = CRC_BF_addEntry( frameSIPH, si->private_bits, 5 );
 	
-	for ( ch = 0; ch < stereo; ch++ )
+	for ( ch = 0; ch < gf.stereo; ch++ )
 	    for ( scfsi_band = 0; scfsi_band < 4; scfsi_band++ )
 	    {
 		BF_PartHolder **pph = &channelSIPH[ch];
@@ -386,7 +388,7 @@ static int encodeSideInfo( III_side_info_t  *si )
 	    }
 
 	for ( gr = 0; gr < 2; gr++ )
-	    for ( ch = 0; ch < stereo; ch++ )
+	    for ( ch = 0; ch < gf.stereo; ch++ )
 	    {
 		BF_PartHolder **pph = &spectrumSIPH[gr][ch];
 		gr_info *gi = &(si->gr[gr].ch[ch].tt);
@@ -421,7 +423,7 @@ static int encodeSideInfo( III_side_info_t  *si )
 		*pph = CRC_BF_addEntry( *pph, gi->count1table_select, 1 );
 	    }
 
-	if ( stereo == 2 )
+	if ( gf.stereo == 2 )
 	    bits_sent += 256;
 	else
 	    bits_sent += 136;
@@ -430,13 +432,13 @@ static int encodeSideInfo( III_side_info_t  *si )
     {  /* MPEG2 */
 	frameSIPH = CRC_BF_addEntry( frameSIPH, si->main_data_begin, 8 );
 
-	if ( stereo == 2 )
+	if ( gf.stereo == 2 )
 	    frameSIPH = CRC_BF_addEntry( frameSIPH, si->private_bits, 2 );
 	else
 	    frameSIPH = CRC_BF_addEntry( frameSIPH, si->private_bits, 1 );
 	
 	gr = 0;
-	for ( ch = 0; ch < stereo; ch++ )
+	for ( ch = 0; ch < gf.stereo; ch++ )
 	{
 	    BF_PartHolder **pph = &spectrumSIPH[gr][ch];
 	    gr_info *gi = &(si->gr[gr].ch[ch].tt);
@@ -468,7 +470,7 @@ static int encodeSideInfo( III_side_info_t  *si )
 	    *pph = CRC_BF_addEntry( *pph, gi->scalefac_scale,     1 );
 	    *pph = CRC_BF_addEntry( *pph, gi->count1table_select, 1 );
 	}
-	if ( stereo == 2 )
+	if ( gf.stereo == 2 )
 	    bits_sent += 136;
 	else
 	    bits_sent += 72;

@@ -5,6 +5,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.24  2000/01/26 08:39:19  markt
+ * removed two c++ commends (by request)
+ *
  * Revision 1.23  2000/01/15 14:35:38  takehiro
  * little bit optimization
  *
@@ -277,11 +280,19 @@ void L3psycho_anal( short int *buffer[2],
     /* formula reverse enginerred from plot in paper */
     for ( sb = 0; sb < SBPSY_s; sb++ ) {
       FLOAT8 mld = 1.25*(1-cos(PI*sb/SBPSY_s))-2.5;
+#ifdef NOPOW
+      mld_s[sb] = exp(mld*LOG10);
+#else
       mld_s[sb] = pow(10.0,mld);
+#endif
     }
     for ( sb = 0; sb < SBPSY_l; sb++ ) {
       FLOAT8 mld = 1.25*(1-cos(PI*sb/SBPSY_l))-2.5;
+#ifdef NOPOW
+      mld_l[sb] = exp(mld*LOG10);
+#else
       mld_l[sb] = pow(10.0,mld);
+#endif
     }
     
     for (i=0;i<HBLKSIZE;i++) partition_l[i]=-1;

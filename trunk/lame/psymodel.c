@@ -5,6 +5,10 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.19  2000/01/09 07:51:36  markt
+ * AAC masking function now the default.  This represents less
+ * masking then the old masking function.
+ *
  * Revision 1.18  2000/01/09 07:34:39  markt
  * compute mid/side energy rations in addition to masking ratios.
  * in the future we might use this for side channel bit allocation.
@@ -218,7 +222,7 @@ void L3psycho_anal( short int *buffer[2], int stereo,
   static	int	numlines_l[CBANDS];
   static FLOAT   ax_sav[4][2][HBLKSIZE], bx_sav[4][2][HBLKSIZE],rx_sav[4][2][HBLKSIZE];
 
-  if((frameNum==0) && (gr_out==0)){
+  if((gf.frameNum==0) && (gr_out==0)){
     
     blocktype_old[0]=STOP_TYPE;
     blocktype_old[1]=STOP_TYPE;
@@ -432,7 +436,7 @@ void L3psycho_anal( short int *buffer[2], int stereo,
     }
   
 #ifdef HAVEGTK
-  if(gtkflag) {
+  if(gf.gtkflag) {
     for (j=0; j<HBLKSIZE ; j++) {
       pinfo->energy[gr_out][chn][j]=energy_save[chn][j];
       energy_save[chn][j]=energy[j];
@@ -708,7 +712,7 @@ void L3psycho_anal( short int *buffer[2], int stereo,
     
     
 #ifdef HAVEGTK
-    if (gtkflag) {
+    if (gf.gtkflag) {
       FLOAT8 mn,mx;
       
       for (sblock=0; sblock < 3; sblock++)

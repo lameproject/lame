@@ -46,6 +46,20 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.1  2000/09/28 16:36:53  takehiro
+ * moved frontend staffs into frontend/
+ * Need to debug vorbis/mpglib/analyzer/bitrate histgram.
+ * still long way to go...
+ *
+ * HAVEGTK is changed ANALYSIS(library side) and HAVEGTK(frontend side)
+ *
+ * BRHIST is deleted from library. all the bitrate histogram works are
+ * now in frontend(but not works properly, yet).
+ *
+ * timestatus things are also moved to frontend.
+ *
+ * parse.c is now out of library.
+ *
  * Revision 1.2  2000/06/07 22:56:02  sbellon
  * added support for FPA10 hardware (RISC OS only)
  *
@@ -55,6 +69,12 @@
  *
  * Revision 2.6  91/04/30  17:06:02  malcolm
  */
+
+/* $Id$ */
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include	<stdio.h>
 #if defined(__riscos__) && defined(FPA10)

@@ -1,4 +1,4 @@
-$Id: DEFINES,v 1.15 2001-02-27 11:39:40 aleidinger Exp $
+$Id: DEFINES,v 1.16 2001-03-07 12:31:47 aleidinger Exp $
 
 USE_FFT3DN:
  - enable 3DNow code for the FFT
@@ -19,7 +19,7 @@ KLEMM_44:
 USE_GOGO_SUBBAND:
  ?
 
-NOTABLES (allways off!):
+NOTABLES (default):
  ?
 
 NEWS3:

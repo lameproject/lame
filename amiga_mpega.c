@@ -7,6 +7,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.2  2000/01/11 20:23:41  cisc
+ * Fixed timestatus bug (forgot nsamp variable).
+ *
  * Revision 1.1  2000/01/10 03:40:20  cisc
  * MPGLIB replacement using mpega.library (AmigaOS)
  *
@@ -29,6 +32,8 @@ MPEGA_CTRL      mctrl;
 
 static int break_cleanup(void)
 {
+	CloseSndFile();
+
 	if(mstream) {
 		MPEGA_close(mstream);
 		mstream = NULL;

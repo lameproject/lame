@@ -5,6 +5,10 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.16  2000/01/08 17:57:54  robert
+ * define AAC_TMN_NMT at compile time to activate AAC tone masking noise
+ * and noise masking tone values
+ *
  * Revision 1.15  2000/01/07 06:13:05  markt
  * Robert's cw_lower_limit, upper_limit code back in.  Default is compute
  * cw[] up to 8.9Khz.  set with --cwlimit <freq>
@@ -987,7 +991,7 @@ int *bu_s, int *bo_s, FLOAT8 *w1_s, FLOAT8 *w2_s)
 	      numlines_l[i] = (int) *p++;
 	      minval[i] = *p++;
 	      qthr_l[i] = *p++;
-	      /* norm_l[i] = */ *p++;
+	      /* norm_l[i] = *p++*/ p++;
 	      bval_l[i] = *p++;
 	      if (j!=i)
 		{
@@ -1077,7 +1081,7 @@ int *bu_s, int *bo_s, FLOAT8 *w1_s, FLOAT8 *w2_s)
 	      j = (int) *p++;
 	      numlines_s[i] = (int) *p++;
 	      qthr_s[i] = *p++;         
-	      /* norm_s[i] =*/ *p++;         
+	      /* norm_s[i] =*p++ */ p++;         
 	      SNR[i] = *p++;            
 	      bval_s[i] = *p++;
 	      if (j!=i)

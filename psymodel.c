@@ -5,6 +5,11 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.18  2000/01/09 07:34:39  markt
+ * compute mid/side energy rations in addition to masking ratios.
+ * in the future we might use this for side channel bit allocation.
+ * it is not used at all right now.
+ *
  * Revision 1.17  2000/01/09 04:11:14  markt
  * someone mistakenly uncommented the call to preemphasis().
  * this routine should *not* be used.  preemph is now taken care of
@@ -340,7 +345,7 @@ void L3psycho_anal( short int *buffer[2], int stereo,
     */
     
 
-#define AACS3XX
+#define AACS3
 #define NEWS3XX
     
     /* compute norm_l, norm_s instead of relying on table data */

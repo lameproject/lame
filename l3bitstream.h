@@ -5,6 +5,10 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.1.1.1  1999/11/24 08:43:09  markt
+ * initial checkin of LAME
+ * Starting with LAME 3.57beta with some modifications
+ *
  * Revision 1.1  1996/02/14 04:04:23  rowlands
  * Initial revision
  *
@@ -21,10 +25,7 @@ void III_format_bitstream( int              bitsPerFrame,
 			   int              l3_enc[2][2][576],
                            III_side_info_t  *l3_side,
 			   III_scalefac_t   *scalefac,
-			   Bit_stream_struc *in_bs,
-			   FLOAT8           (*xr)[2][576],
-			   char             *ancillary,
-			   int              anc_bits );
+			   Bit_stream_struc *in_bs);
 
 int HuffmanCode( int table_select, int x, int y, unsigned *code, unsigned int *extword, int *codebits, int *extbits );
 void III_FlushBitstream(void);

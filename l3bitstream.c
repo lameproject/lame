@@ -5,6 +5,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.2  1999/11/27 23:39:25  markt
+ * More accurate quantization from Segher Boessenkool
+ *
  * Revision 1.1.1.1  1999/11/24 08:43:09  markt
  * initial checkin of LAME
  * Starting with LAME 3.57beta with some modifications
@@ -73,10 +76,7 @@ III_format_bitstream( int              bitsPerFrame,
 		      int              l3_enc[2][2][576],
 		      III_side_info_t  *l3_side,
 		      III_scalefac_t   *scalefac,
-		      Bit_stream_struc *in_bs,
-		      FLOAT8           (*xr)[2][576],
-		      char             *ancillary,
-		      int              ancillary_bits )
+		      Bit_stream_struc *in_bs)
 {
     int gr, ch,  mode_gr;
     fr_ps = in_fr_ps;
@@ -115,29 +115,8 @@ III_format_bitstream( int              bitsPerFrame,
 	PartHoldersInitialized = 1;
     }
 
-#if 0
-    /* this makes more sense in loop.c */
-    for ( gr = 0; gr < mode_gr; gr++ )
-	for ( ch =  0; ch < stereo; ch++ )
-	{
-	    int *pi = &l3_enc[gr][ch][0];
-	    int i;
-	    for ( i = 0; i < 576; i++) 	    {
-	      FLOAT8 pr = xr[gr][ch][i];
-              /* ms stereo fix.  if ms_stereo, l3_enc will be M/S values */
-	      if (in_fr_ps->header->mode_ext == 2) {
-		pr = ch ? (xr[gr][0][i]-xr[gr][1][i]) : (xr[gr][0][i]+xr[gr][1][i]);
-		/* pr /= sqrt(2.0); */
-	      }
-
-	      if ( (pr < 0) && (pi[i] > 0) )   pi[i] *= -1;
-	    }
-	}
-#endif
-
     encodeSideInfo( l3_side );
     encodeMainData( l3_enc, l3_side, scalefac );
-    write_ancillary_data( ancillary, ancillary_bits );
 
 
 

@@ -1,4 +1,4 @@
-$Id: DEFINES,v 1.19 2001-08-27 20:56:31 aleidinger Exp $
+$Id: DEFINES,v 1.20 2001-11-04 18:52:46 robert Exp $
 
 KLEMM_36:
  - portability fixes in the IO code
@@ -40,9 +40,6 @@ PRECOMPUTE (always on, multiple defines):
 USE_GNUC_ASM:
  - speed optimization
    (should move into configure.in)
-
-MAXQUANTERROR:
- ?
 
 ... alot of #if 0 / #if 1 not evaluated ...
 

@@ -5,6 +5,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.4  2000/03/21 23:02:17  markt
+ * replaced all "gf." by gfp->
+ *
  * Revision 1.3  2000/03/14 21:01:47  markt
  * removed fr_ps struct
  *
@@ -33,7 +36,7 @@
 #define RESERVOIR_H
 
 int ResvFrameBegin( lame_global_flags *gfp,III_side_info_t *l3_side, int mean_bits, int frameLength );
-void ResvMaxBits( int mean_bits, int *targ_bits, int *max_bits, int gr);
+void ResvMaxBits( int mean_bits, int *targ_bits, int *max_bits);
 void ResvAdjust(lame_global_flags *gfp,gr_info *gi, III_side_info_t *l3_side, int mean_bits );
 void ResvFrameEnd(lame_global_flags *gfp,III_side_info_t *l3_side, int mean_bits );
 

@@ -5,6 +5,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.3  1999/12/21 08:18:51  markt
+ * Bug fix in Mid/Side masking thresholds
+ *
  * Revision 1.2  1999/11/29 02:45:59  markt
  * MS stereo switch slightly improved:  old formula was based on the average
  * of ms_ratio of both granules.  New formula uses ms_ratio from both
@@ -92,7 +95,7 @@ typedef struct {
 	int resvDrain;
 	unsigned scfsi[2][4];
 	struct {
-		struct gr_info_s {
+		struct gr_info_ss {
 			gr_info tt;
 			} ch[2];
 		} gr[2];

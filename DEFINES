@@ -1,4 +1,4 @@
-$Id: DEFINES,v 1.8 2000-12-19 13:09:23 aleidinger Exp $
+$Id: DEFINES,v 1.9 2000-12-20 15:14:12 aleidinger Exp $
 
 RH_VALIDATE_MS:
  avoids to switch from LR to MS when the perceptual entropy indicates
@@ -42,9 +42,6 @@ threshold to switch to MS coding is increased.
 Increases significantly the quality for 160 kbps. Castagnets is the example
 which sounds much much better with this switch.
 ---snip---
-
-KLEMM_13: (missing)
- bitrate and LR/MS statistics also displayed for CBR
 
 KLEMM_14: (missing)
  some optimizations and code simplifications (unrolled code)

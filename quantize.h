@@ -5,6 +5,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.2  2000/02/01 11:26:32  takehiro
+ * scalefactor's structure changed
+ *
  * Revision 1.1.1.1  1999/11/24 08:43:45  markt
  * initial checkin of LAME
  * Starting with LAME 3.57beta with some modifications
@@ -34,12 +37,12 @@ extern int cont_flag;
 extern int pretab[];
 
 void iteration_loop( FLOAT8 pe[2][2], FLOAT8 ms_ratio[2], 
-		     FLOAT8 xr_org[2][2][576], III_psy_ratio *ratio,
+		     FLOAT8 xr_org[2][2][576], III_psy_ratio ratio[2][2],
 		     III_side_info_t *l3_side, int l3_enc[2][2][576], 
 		     III_scalefac_t scalefac[2][2], frame_params *fr_ps);
 
 void VBR_iteration_loop( FLOAT8 pe[2][2], FLOAT8 ms_ratio[2], 
-		     FLOAT8 xr_org[2][2][576], III_psy_ratio *ratio,
+		     FLOAT8 xr_org[2][2][576], III_psy_ratio ratio[2][2],
 		     III_side_info_t *l3_side, int l3_enc[2][2][576], 
 		     III_scalefac_t scalefac[2][2], frame_params *fr_ps);
 

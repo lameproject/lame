@@ -5,6 +5,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.8  2000/01/13 16:26:50  takehiro
+ * moved info.stereo into gf.stereo
+ *
  * Revision 1.7  2000/01/12 14:30:54  takehiro
  * more simple & fast scalefac_scale use
  * and mode_gr is moved into gf structure.
@@ -208,7 +211,7 @@ encodeMainData( int              l3_enc[2][2][576],
 		unsigned slen2 = slen2_tab[ gi->scalefac_compress ];
 		int *ix = &l3_enc[gr][ch][0];
 
-		if ( (gi->window_switching_flag == 1) && (gi->block_type == SHORT_TYPE) )
+		if (gi->block_type == SHORT_TYPE)
 		{
 #ifdef ALLOW_MIXED
 		    if ( gi->mixed_block_flag )

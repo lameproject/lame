@@ -1,4 +1,4 @@
-$Id: DEFINES,v 1.6 2000-12-05 15:48:21 aleidinger Exp $
+$Id: DEFINES,v 1.7 2000-12-11 16:03:06 aleidinger Exp $
 
 RH_VALIDATE_MS:
  avoids to switch from LR to MS when the perceptual entropy indicates
@@ -16,7 +16,7 @@ RH_OUTERLOOP:
 leftover in comment: RH_QUALITY_CONTROL
 
 
-KLEMM_04: (missing)
+KLEMM_04:
  - correctly calculated FIR coefficients
  - sample_t instead of FLOAT for FIR coefficients
  

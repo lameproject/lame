@@ -5,6 +5,9 @@
  * $Id$
  *
  * $Log$
+ * Revision 1.26  2000/01/27 05:05:07  markt
+ * Takehiro's fft_short and fft_long now the defaults.
+ *
  * Revision 1.25  2000/01/27 03:52:58  cisc
  * Added NOPOW define, will replace certain pow()s with optimized variant.
  *
@@ -530,7 +533,8 @@ void L3psycho_anal( short int *buffer[2],
       }
 
 
-    fft_short( &wsamp_s[0][0], energy_s, chn, buffer);
+    fft_short( wsamp_s, energy_s, chn, buffer); /* old routines */
+
     /**********************************************************************
      *     compute unpredicatibility of next 200 spectral lines            *
      **********************************************************************/ 

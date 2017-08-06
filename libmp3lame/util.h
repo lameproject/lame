@@ -482,6 +482,7 @@ extern  "C" {
 #  define  LAME_ID   0xFFF88E3B
         unsigned long class_id;
 
+        int     lame_init_params_successful;
         int     lame_encode_frame_init;
         int     iteration_init_init;
         int     fill_buffer_resample_init;

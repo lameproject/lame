@@ -4,7 +4,7 @@
  *
  *      Copyright (c) 1999-2000 Mark Taylor
  *      Copyright (c) 2000-2005 Takehiro Tominaga
- *      Copyright (c) 2000-2012 Robert Hegemann
+ *      Copyright (c) 2000-2017 Robert Hegemann
  *      Copyright (c) 2000-2005 Gabriel Bouvigne
  *      Copyright (c) 2000-2004 Alexander Leidinger
  *
@@ -82,6 +82,8 @@ is_lame_internal_flags_valid(const lame_internal_flags * gfc)
     if (gfc == NULL)
         return 0;
     if (gfc->class_id != LAME_ID)
+        return 0;
+    if (gfc->lame_init_params_successful <=0)
         return 0;
     return 1;
 }
@@ -550,9 +552,16 @@ lame_init_params(lame_global_flags * gfp)
     if (gfc == 0) 
         return -1;
 
-    cfg = &gfc->cfg;
+    /* start updating lame internal flags */
+    gfc->class_id = LAME_ID;
+    gfc->lame_init_params_successful = 0; /* will be set to one, when we get through until the end */
 
-    gfc->class_id = 0;
+    if (gfp->samplerate_in < 1)
+        return -1; /* input sample rate makes no sense */
+    if (gfp->num_channels < 1)
+        return -1; /* number of input channels makes no sense */
+
+    cfg = &gfc->cfg;
 
     cfg->enforce_min_bitrate = gfp->VBR_hard_min;
     cfg->analysis = gfp->analysis;
@@ -783,12 +792,6 @@ lame_init_params(lame_global_flags * gfp)
             gfp->samplerate_out * 16 * cfg->channels_out / (1.e3 * gfp->VBR_mean_bitrate_kbps);
     }
 
-    if (gfp->samplerate_in < 0 || gfp->num_channels < 0) {
-        freegfc(gfc);
-        gfp->internal_flags = NULL;
-        return -1;
-    }
-
     cfg->disable_reservoir = gfp->disable_reservoir;
     cfg->lowpassfreq = gfp->lowpassfreq;
     cfg->highpassfreq = gfp->highpassfreq;
@@ -953,8 +956,6 @@ lame_init_params(lame_global_flags * gfp)
 
     if (cfg->error_protection)
         cfg->sideinfo_len += 2;
-
-    gfc->class_id = LAME_ID;
 
     {
         int     k;
@@ -1278,6 +1279,8 @@ lame_init_params(lame_global_flags * gfp)
         hip_set_msgf(gfc->hip, gfp->report.msgf);
     }
 #endif
+    /* updating lame internal flags finished successful */
+    gfc->lame_init_params_successful = 1;
     return 0;
 }
 
@@ -2193,6 +2196,7 @@ lame_close(lame_global_flags * gfp)
             ret = -3;
         }
         if (NULL != gfc) {
+            gfc->lame_init_params_successful = 0;
             gfc->class_id = 0;
             /* this routine will free all malloc'd data in gfc, and then free gfc: */
             freegfc(gfc);

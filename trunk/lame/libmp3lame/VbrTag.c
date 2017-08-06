@@ -912,7 +912,7 @@ lame_get_lametag_frame(lame_global_flags const *gfp, unsigned char *buffer, size
     if (gfc == 0) {
         return 0;
     }
-    if (gfc->class_id != LAME_ID) {
+    if (!is_lame_internal_flags_valid(gfc)) {
         return 0;
     }
     cfg = &gfc->cfg;

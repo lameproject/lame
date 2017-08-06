@@ -68,6 +68,8 @@ int
 lame_set_in_samplerate(lame_global_flags * gfp, int in_samplerate)
 {
     if (is_lame_global_flags_valid(gfp)) {
+        if (in_samplerate < 1)
+            return -1;
         /* input sample rate in Hz,  default = 44100 Hz */
         gfp->samplerate_in = in_samplerate;
         return 0;
@@ -91,7 +93,7 @@ lame_set_num_channels(lame_global_flags * gfp, int num_channels)
 {
     if (is_lame_global_flags_valid(gfp)) {
         /* default = 2 */
-        if (2 < num_channels || 0 == num_channels) {
+        if (2 < num_channels || 0 >= num_channels) {
             return -1;  /* we don't support more than 2 channels */
         }
         gfp->num_channels = num_channels;

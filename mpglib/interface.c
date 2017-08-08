@@ -316,11 +316,11 @@ sync_buffer(PMPSTR mp, int free_match)
         b[2] = b[3];
         while (pos >= buf->size) {
             buf = buf->next;
-            pos = buf->pos;
             if (!buf) {
                 return -1;
                 /* not enough data to read 4 bytes */
             }
+            pos = buf->pos;
         }
         b[3] = buf->pnt[pos];
         ++pos;

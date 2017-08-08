@@ -3,7 +3,7 @@
  *
  *      Copyright (c) 1999 Mark Taylor
  *                    2000 Takehiro TOMINAGA
- *                    2010-2012 Robert Hegemann
+ *                    2010-2017 Robert Hegemann
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -508,10 +508,11 @@ parse_nogap_filenames(int nogapout, char const *inPath, char *outPath, char *out
     char const *slasher;
     size_t  n;
 
-    /* FIXME: replace strcpy by safer strncpy */
-    strcpy(outPath, outdir);
+    strncpy(outPath, outdir, PATH_MAX+1);
+    outPath[PATH_MAX] = '\0';
     if (!nogapout) {
         strncpy(outPath, inPath, PATH_MAX + 1 - 4);
+        outPath[PATH_MAX-4] = '\0';
         n = strlen(outPath);
         /* nuke old extension, if one  */
         if (outPath[n - 3] == 'w'
@@ -590,7 +591,7 @@ lame_main(lame_t gf, int argc, char **argv)
 
     int     ret;
     int     i;
-    FILE   *outf;
+    FILE   *outf = NULL;
 
     lame_set_msgf(gf, &frontend_msgf);
     lame_set_errorf(gf, &frontend_errorf);
@@ -621,6 +622,7 @@ lame_main(lame_t gf, int argc, char **argv)
 
     if (outPath[0] != '\0' && max_nogap > 0) {
         strncpy(nogapdir, outPath, PATH_MAX + 1);
+        nogapdir[PATH_MAX] = '\0';
         nogapout = 1;
     }
 
@@ -653,6 +655,7 @@ lame_main(lame_t gf, int argc, char **argv)
             display_bitrates(stderr);
         }
         error_printf("fatal error during initialization\n");
+        fclose(outf);
         return ret;
     }
 
@@ -677,6 +680,8 @@ lame_main(lame_t gf, int argc, char **argv)
                 /* note: if init_files changes anything, like
                    samplerate, num_channels, etc, we are screwed */
                 outf = init_files(gf, nogap_inPath[i], outPath);
+                if (outf == NULL)
+                    return -1;
                 /* reinitialize bitstream for next encoding.  this is normally done
                  * by lame_init_params(), but we cannot call that routine twice */
                 lame_init_bitstream(gf);

@@ -505,7 +505,8 @@ decodeMP3_clipchoice(PMPSTR mp, unsigned char *in, int isize, char *out, int *do
         }
 
         read_head(mp);
-        decode_header(mp, &mp->fr, mp->header);
+        if (!decode_header(mp, &mp->fr, mp->header))
+            return MP3_ERR;
         mp->header_parsed = 1;
         mp->framesize = mp->fr.framesize;
         mp->free_format = (mp->framesize == 0);

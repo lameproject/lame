@@ -167,7 +167,7 @@ printInputFormat(lame_t gfp)
  * samples to skip, to (for example) compensate for the encoder delay */
 
 static int
-lame_decoder(lame_t gfp, FILE * outf, char *inPath, char *outPath)
+lame_decoder_loop(lame_t gfp, FILE * outf, char *inPath, char *outPath)
 {
     short int Buffer[2][1152];
     int     i, iread;
@@ -179,7 +179,7 @@ lame_decoder(lame_t gfp, FILE * outf, char *inPath, char *outPath)
 
     if (!(tmp_num_channels >= 1 && tmp_num_channels <= 2)) {
         error_printf("Internal error.  Aborting.");
-        exit(-1);
+        return -1;
     }
 
     if (global_ui_config.silent < 9) {
@@ -252,14 +252,22 @@ lame_decoder(lame_t gfp, FILE * outf, char *inPath, char *outPath)
     if (!global_decoder.disable_wav_header && strcmp("-", outPath)
         && !fseek(outf, 0l, SEEK_SET))
         WriteWaveHeader(outf, (int) wavsize, lame_get_in_samplerate(gfp), tmp_num_channels, 16);
-    fclose(outf);
-    close_infile();
 
     if (dp != 0)
         decoder_progress_finish(dp);
     return 0;
 }
 
+static int
+lame_decoder(lame_t gfp, FILE * outf, char *inPath, char *outPath)
+{
+    int     ret;
+
+    ret = lame_decoder_loop(gfp, outf, inPath, outPath);
+    fclose(outf);       /* close the output file */
+    close_infile();     /* close the input file */
+    return ret;
+}
 
 
 static void
@@ -656,6 +664,7 @@ lame_main(lame_t gf, int argc, char **argv)
         }
         error_printf("fatal error during initialization\n");
         fclose(outf);
+        close_infile();
         return ret;
     }
 

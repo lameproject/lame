@@ -512,19 +512,17 @@ III_get_side_info_2(PMPSTR mp, int stereo, int ms_stereo, long sfreq, int single
                 /* exit(1); */
             }
             /* region_count/start parameters are implicit in this case. */
-/* check this again! */
-            if (gr_infos->block_type == 2) {
-                if (sfreq == 8)
-                    gr_infos->region1start = 36;
-                else
-                    gr_infos->region1start = 36 >> 1;
-            }
-            else if (sfreq == 8)
-/* check this for 2.5 and sfreq=8 */
-                gr_infos->region1start = 108 >> 1;
+	          if (gr_infos->block_type == 2) {
+	              if (gr_infos->mixed_block_flag == 0)
+	                  gr_infos->region1start = 36 >> 1;
+	              else
+	                  gr_infos->region1start = 48 >> 1;
+	          }
             else
-                gr_infos->region1start = 54 >> 1;
-            gr_infos->region2start = 576 >> 1;
+	              gr_infos->region1start = 54 >> 1;
+	          if (sfreq == 8)
+	              gr_infos->region1start *= 2;
+	          gr_infos->region2start = 576 >> 1;
         }
         else {
             unsigned int i, r0c, r1c, region0index, region1index;
@@ -711,10 +709,11 @@ III_dequantize_sample(PMPSTR mp, real xr[SBLIMIT][SSLIMIT], int *scf,
                       struct gr_info_s *gr_infos, int sfreq, int part2bits)
 {
     int     shift = 1 + gr_infos->scalefac_scale;
-    real   *xrpnt = (real *) xr;
+    real   *xrpnt = (real *) xr, xr_value=0;
     int     l[3], l3;
     int     part2remain = gr_infos->part2_3_length - part2bits;
     int    *me;
+    real const * const xr_endptr = &xr[SBLIMIT-1][SSLIMIT-1];
 
     /* lame_report_fnc(mp->report_dbg,"part2remain = %d, gr_infos->part2_3_length = %d, part2bits = %d\n",
        part2remain, gr_infos->part2_3_length, part2bits); */
@@ -826,44 +825,54 @@ III_dequantize_sample(PMPSTR mp, real xr[SBLIMIT][SSLIMIT], int *scf,
                     part2remain -= h->linbits + 1;
                     x += getbits(mp, (int) h->linbits);
                     if (get1bit(mp))
-                        *xrpnt = -ispow[x] * v;
+                        xr_value = -ispow[x] * v;
                     else
-                        *xrpnt = ispow[x] * v;
+                        xr_value = ispow[x] * v;
                 }
                 else if (x) {
                     max[lwin] = cb;
                     if (get1bit(mp))
-                        *xrpnt = -ispow[x] * v;
+                        xr_value = -ispow[x] * v;
                     else
-                        *xrpnt = ispow[x] * v;
+                        xr_value = ispow[x] * v;
                     part2remain--;
                 }
                 else
-                    *xrpnt = 0.0;
+                    xr_value = 0.0;
+
+                if (xrpnt <= xr_endptr)
+                    *xrpnt = xr_value;
+                else /* well, there was a bug report, where this happened! */
+                    lame_report_fnc(mp->report_err, "hip: OOPS, xrpnt>xr_endptr\n");
                 xrpnt += step;
                 if (y == 15) {
                     max[lwin] = cb;
                     part2remain -= h->linbits + 1;
                     y += getbits(mp, (int) h->linbits);
                     if (get1bit(mp))
-                        *xrpnt = -ispow[y] * v;
+                        xr_value = -ispow[y] * v;
                     else
-                        *xrpnt = ispow[y] * v;
+                        xr_value = ispow[y] * v;
                 }
                 else if (y) {
                     max[lwin] = cb;
                     if (get1bit(mp))
-                        *xrpnt = -ispow[y] * v;
+                        xr_value = -ispow[y] * v;
                     else
-                        *xrpnt = ispow[y] * v;
+                        xr_value = ispow[y] * v;
                     part2remain--;
                 }
                 else
-                    *xrpnt = 0.0;
+                    xr_value = 0.0;
+
+                if (xrpnt <= xr_endptr)
+                    *xrpnt = xr_value;
+                else /* well, there was a bug report, where this happened! */
+                    lame_report_fnc(mp->report_err, "hip: OOPS, xrpnt>xr_endptr\n");
                 xrpnt += step;
             }
         }
-        for (; l3 && (part2remain > 0); l3--) {
+        for (; (l3 > 0) && (part2remain > 0); l3--) {
             struct newhuff const *h = (struct newhuff const *) (htc + gr_infos->count1table_select);
             short const *val = (short const *) h->table;
             short   a;
@@ -904,17 +913,23 @@ III_dequantize_sample(PMPSTR mp, real xr[SBLIMIT][SSLIMIT], int *scf,
                         break;
                     }
                     if (get1bit(mp))
-                        *xrpnt = -v;
+                        xr_value = -v;
                     else
-                        *xrpnt = v;
+                        xr_value = v;
                 }
                 else
-                    *xrpnt = 0.0;
+                    xr_value = 0.0;
+
+                if (xrpnt <= xr_endptr)
+                    *xrpnt = xr_value;
+                else /* well, there was a bug report, where this happened! */
+                    lame_report_fnc(mp->report_err, "hip: OOPS, part2remain=%d && l3=%d && xrpnt>xr_endptr  cb=%d i=%d lwin=%d\n",part2remain,l3,cb,i,lwin);
                 xrpnt += step;
             }
         }
-
-        while (m < me) {
+        if ((m < me) && (xrpnt >= xr_endptr))
+            lame_report_fnc(mp->report_err, "hip: OOPS me-m = %d\n",(int)(me-m));
+        while ((m < me) && (xrpnt < xr_endptr)) {
             if (!mc) {
                 mc = *m++;
                 xrpnt = ((real *) xr) + *m++;
@@ -989,40 +1004,50 @@ III_dequantize_sample(PMPSTR mp, real xr[SBLIMIT][SSLIMIT], int *scf,
                     part2remain -= h->linbits + 1;
                     x += getbits(mp, (int) h->linbits);
                     if (get1bit(mp))
-                        *xrpnt++ = -ispow[x] * v;
+                        xr_value = -ispow[x] * v;
                     else
-                        *xrpnt++ = ispow[x] * v;
+                        xr_value = ispow[x] * v;
                 }
                 else if (x) {
                     max = cb;
                     if (get1bit(mp))
-                        *xrpnt++ = -ispow[x] * v;
+                        xr_value = -ispow[x] * v;
                     else
-                        *xrpnt++ = ispow[x] * v;
+                        xr_value = ispow[x] * v;
                     part2remain--;
                 }
                 else
-                    *xrpnt++ = 0.0;
+                    xr_value = 0.0;
+
+                if (xrpnt <= xr_endptr)
+                    *xrpnt++ = xr_value;
+                else /* well, there was a bug report, where this happened! */
+                    lame_report_fnc(mp->report_err, "hip: OOPS, xrpnt>xr_endptr\n");
 
                 if (y == 15) {
                     max = cb;
                     part2remain -= h->linbits + 1;
                     y += getbits(mp, (int) h->linbits);
                     if (get1bit(mp))
-                        *xrpnt++ = -ispow[y] * v;
+                        xr_value = -ispow[y] * v;
                     else
-                        *xrpnt++ = ispow[y] * v;
+                        xr_value = ispow[y] * v;
                 }
                 else if (y) {
                     max = cb;
                     if (get1bit(mp))
-                        *xrpnt++ = -ispow[y] * v;
+                        xr_value = -ispow[y] * v;
                     else
-                        *xrpnt++ = ispow[y] * v;
+                        xr_value = ispow[y] * v;
                     part2remain--;
                 }
                 else
-                    *xrpnt++ = 0.0;
+                    xr_value = 0.0;
+
+                if (xrpnt <= xr_endptr)
+                    *xrpnt++ = xr_value;
+                else /* well, there was a bug report, where this happened! */
+                    lame_report_fnc(mp->report_err, "hip: OOPS, xrpnt>xr_endptr\n");
             }
         }
 
@@ -1061,22 +1086,25 @@ III_dequantize_sample(PMPSTR mp, real xr[SBLIMIT][SSLIMIT], int *scf,
                         break;
                     }
                     if (get1bit(mp))
-                        *xrpnt++ = -v;
+                        xr_value = -v;
                     else
-                        *xrpnt++ = v;
+                        xr_value = v;
                 }
                 else
-                    *xrpnt++ = 0.0;
+                    xr_value = 0.0;
+
+                if (xrpnt <= xr_endptr)
+                    *xrpnt++ = xr_value;
+                else /* well, there was a bug report, where this happened! */
+                    lame_report_fnc(mp->report_err, "hip: OOPS, xrpnt>xr_endptr\n");
             }
         }
 
         /* 
          * zero part
          */
-        for (i = (&xr[SBLIMIT][0] - xrpnt) >> 1; i; i--) {
+        while (xrpnt <= xr_endptr)
             *xrpnt++ = 0.0;
-            *xrpnt++ = 0.0;
-        }
 
         gr_infos->maxbandl = max + 1;
         gr_infos->maxb = longLimit[sfreq][gr_infos->maxbandl];

@@ -274,6 +274,11 @@ setProcessPriority(int Priority)
  * why not wchar_t all the way?
  * well, that seems to be a big mess and not portable at all
  */
+#ifndef NDEBUG
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>  
+#include <crtdbg.h>
+#endif
 #include <wchar.h>
 #include <mbstring.h>
 
@@ -368,13 +373,28 @@ unsigned short* utf8ToUtf16(char const* mbstr) /* additional Byte-Order-Marker *
   return wstr;
 }
 
-
+static
+void setDebugMode()
+{
+#ifndef NDEBUG
+    if ( IsDebuggerPresent() ) {
+        // Get current flag  
+        int tmpFlag = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
+        //tmpFlag |= _CRTDBG_DELAY_FREE_MEM_DF;  
+        tmpFlag |= _CRTDBG_ALLOC_MEM_DF|_CRTDBG_LEAK_CHECK_DF;
+        // Set flag to the new value.  
+        _CrtSetDbgFlag( tmpFlag );
+        _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE);
+        _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
+    }
+#endif
+}
 
 int wmain(int argc, wchar_t* argv[])
 {
   char **utf8_argv;
   int i, ret;
-
+  setDebugMode();
   utf8_argv = calloc(argc, sizeof(char*));
   for (i = 0; i < argc; ++i) {
     utf8_argv[i] = unicodeToUtf8(argv[i]);

@@ -650,6 +650,10 @@ samples_to_skip_at_end(void)
 void
 close_infile(void)
 {
+    if (global.hip != 0) {
+        hip_decode_exit(global.hip); /* release mp3decoder memory */
+        global. hip = 0;
+    }
     close_input_file(global.music_in);
 #ifdef LIBSNDFILE
     if (global.snd_file) {
@@ -992,7 +996,8 @@ open_snd_file(lame_t gfp, char const *inPath)
         if (gs_pSndFileIn == NULL) {
             if (global_raw_pcm.in_signed == 0 && global_raw_pcm.in_bitwidth != 8) {
                 error_printf("Unsigned input only supported with bitwidth 8\n");
-                exit(1);
+                free(file_name);
+                return 0;
             }
             /* set some defaults incase input is raw PCM */
             gs_wfInfo.seekable = (global_reader.input_format != sf_raw); /* if user specified -r, set to not seekable */
@@ -1039,7 +1044,7 @@ open_snd_file(lame_t gfp, char const *inPath)
             if (global_ui_config.silent < 10) {
                 error_printf("Could not open sound file \"%s\".\n", lpszFileName);
             }
-            exit(1);
+            return 0;
         }
         sf_command(gs_pSndFileIn, SFC_SET_SCALE_FLOAT_INT_READ, NULL, SF_TRUE);
 
@@ -1155,7 +1160,7 @@ open_snd_file(lame_t gfp, char const *inPath)
             if (global_ui_config.silent < 10) {
                 error_printf("Could not open sound file \"%s\".\n", lpszFileName);
             }
-            exit(1);
+            return 0;
         }
 
 
@@ -1163,10 +1168,14 @@ open_snd_file(lame_t gfp, char const *inPath)
             (void) lame_set_num_samples(gfp, gs_wfInfo.frames);
         else
             (void) lame_set_num_samples(gfp, MAX_U_32_NUM);
-        if (!set_input_num_channels(gfp, gs_wfInfo.channels))
-            exit(1);
-        if (!set_input_samplerate(gfp, gs_wfInfo.samplerate))
-            exit(1);
+        if (!set_input_num_channels(gfp, gs_wfInfo.channels)) {
+            sf_close(gs_pSndFileIn);
+            return 0;
+        }
+        if (!set_input_samplerate(gfp, gs_wfInfo.samplerate)) {
+            sf_close(gs_pSndFileIn);
+            return 0;
+        }
         global. pcmbitwidth = 32;
     }
 #if 0
@@ -1787,7 +1796,7 @@ open_wave_file(lame_t gfp, char const *inPath, int *enc_delay, int *enc_padding)
             if (global_ui_config.silent < 10) {
                 error_printf("Could not find \"%s\".\n", inPath);
             }
-            exit(1);
+            return 0;
         }
     }
 
@@ -1795,7 +1804,8 @@ open_wave_file(lame_t gfp, char const *inPath, int *enc_delay, int *enc_padding)
         if (global_ui_config.silent < 10) {
             error_printf("sorry, vorbis support in LAME is deprecated.\n");
         }
-        exit(1);
+        close_input_file(musicin);
+        return 0;
     }
     else if (global_reader.input_format == sf_raw) {
         /* assume raw PCM */
@@ -1814,10 +1824,12 @@ open_wave_file(lame_t gfp, char const *inPath, int *enc_delay, int *enc_padding)
     if (global_reader.input_format == sf_mp123) {
         if (open_mpeg_file_part2(gfp, musicin, inPath, enc_delay, enc_padding))
             return musicin;
-        exit(2);
+        close_input_file(musicin);
+        return 0;
     }
     if (global_reader.input_format == sf_unknown) {
-        exit(1);
+        close_input_file(musicin);
+        return 0;
     }
 
     if (lame_get_num_samples(gfp) == MAX_U_32_NUM && musicin != stdin) {
@@ -2142,8 +2154,6 @@ lame_decode_fromfile(FILE * fd, short pcm_l[], short pcm_r[], mp3data_struct * m
             /* we are done reading the file, but check for buffered data */
             ret = hip_decode1_headers(global.hip, buf, len, pcm_l, pcm_r, mp3data);
             if (ret <= 0) {
-                hip_decode_exit(global.hip); /* release mp3decoder memory */
-                global. hip = 0;
                 return -1; /* done with file */
             }
             break;
@@ -2151,8 +2161,6 @@ lame_decode_fromfile(FILE * fd, short pcm_l[], short pcm_r[], mp3data_struct * m
 
         ret = hip_decode1_headers(global.hip, buf, len, pcm_l, pcm_r, mp3data);
         if (ret == -1) {
-            hip_decode_exit(global.hip); /* release mp3decoder memory */
-            global. hip = 0;
             return -1;
         }
         if (ret > 0)

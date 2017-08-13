@@ -2126,21 +2126,32 @@ lame_get_totalframes(const lame_global_flags * gfp)
         lame_internal_flags const *const gfc = gfp->internal_flags;
         if (is_lame_internal_flags_valid(gfc)) {
             SessionConfig_t const *const cfg = &gfc->cfg;
+            unsigned long const max_value = (0ul-1ul) - 3ul * 576ul;
             unsigned long const pcm_samples_per_frame = 576 * cfg->mode_gr;
             unsigned long pcm_samples_to_encode = gfp->num_samples;
             unsigned long end_padding = 0;
 
             /* estimate based on user set num_samples: */
-            if (pcm_samples_to_encode == (0ul-1ul)) {
-                return 0;
+            if (gfp->samplerate_in != gfp->samplerate_out) {
+                /* resampling, estimate new samples_to_encode */
+                double resampled_samples_to_encode = 0.0;
+                if (gfp->samplerate_in > 0) {
+                    resampled_samples_to_encode = pcm_samples_to_encode;
+                    resampled_samples_to_encode *= gfp->samplerate_out;
+                    resampled_samples_to_encode /= gfp->samplerate_in;
+                }
+                if (resampled_samples_to_encode <= 0.0)
+                    return 0; /* unlikely to happen, so what, no estimate! */
+                if (resampled_samples_to_encode >= max_value)
+                    return 0; /* overflow, happens eventually, no estimate! */
+                pcm_samples_to_encode = resampled_samples_to_encode+0.5;
             }
-            if (gfp->samplerate_in != gfp->samplerate_out && gfp->samplerate_in > 0) {
-                double const q = (double)gfp->samplerate_out / gfp->samplerate_in;
-                pcm_samples_to_encode *= q;
+            if (pcm_samples_to_encode >= max_value) {
+                return 0; /* unknown or overflow, no estimate! */
             }
-            pcm_samples_to_encode += 576;
+            pcm_samples_to_encode += 576ul;
             end_padding = pcm_samples_per_frame - (pcm_samples_to_encode % pcm_samples_per_frame);
-            if (end_padding < 576) {
+            if (end_padding < 576ul) {
                 end_padding += pcm_samples_per_frame;
             }
             pcm_samples_to_encode += end_padding;

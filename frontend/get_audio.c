@@ -736,15 +736,24 @@ note: either buffer or buffer16 must be allocated upon call
 static int
 get_audio_common(lame_t gfp, int buffer[2][1152], short buffer16[2][1152])
 {
-    int     num_channels = lame_get_num_channels(gfp);
+    const int num_channels = lame_get_num_channels(gfp);
+    const int framesize = lame_get_framesize(gfp);
     int     insamp[2 * 1152];
     short   buf_tmp16[2][1152];
     int     samples_read;
-    int     framesize;
     int     samples_to_read;
     unsigned int remaining;
     int     i;
     int    *p;
+
+    /* sanity checks, that's what we expect to be true */
+    if ((num_channels < 1 || 2 < num_channels)
+      ||(framesize < 1 || 1152 < framesize)) {
+        if (global_ui_config.silent < 10) {
+            error_printf("Error: internal problem!\n");
+        }
+        return -1;
+    }
 
     /* 
      * NOTE: LAME can now handle arbritray size input data packets,
@@ -753,9 +762,7 @@ get_audio_common(lame_t gfp, int buffer[2][1152], short buffer16[2][1152])
      * will get out of sync if we read more than framesize worth of data.
      */
 
-    samples_to_read = framesize = lame_get_framesize(gfp);
-    assert(framesize <= 1152);
-
+    samples_to_read = framesize;
 
     /* if this flag has been set, then we are carefull to read
      * exactly num_samples and no more.  This is useful for .wav and .aiff
@@ -1326,6 +1333,12 @@ read_samples_pcm(FILE * musicin, int sample_buffer[2304], int samples_to_read)
         }
         return -1;
     }
+    if (samples_to_read < 0 || samples_to_read > 2304) {
+        if (global_ui_config.silent < 10) {
+            error_printf("Error: unexpected number of samples to read: %d\n", samples_to_read);
+        }
+        return -1;
+    }
     samples_read = unpack_read_samples(samples_to_read, bytes_per_sample, swap_byte_order,
                                        sample_buffer, musicin);
     if (ferror(musicin)) {
@@ -1482,9 +1495,11 @@ parse_wave_header(lame_global_flags * gfp, FILE * sf)
         if (!set_input_samplerate(gfp, samples_per_sec))
             return 0;
         /* avoid division by zero */
-        if (bits_per_sample < 1)
+        if (bits_per_sample < 1) {
+            if (global_ui_config.silent < 10)
+                error_printf("Unsupported bits per sample: %d\n", bits_per_sample);
             return -1;
-
+        }
         global. pcmbitwidth = bits_per_sample;
         global. pcm_is_unsigned_8bit = 1;
         global. pcm_is_ieee_float = (format_tag == WAVE_FORMAT_IEEE_FLOAT ? 1 : 0);

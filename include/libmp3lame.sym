@@ -161,6 +161,7 @@ lame_print_config
 lame_print_internals
 lame_encode_buffer
 lame_encode_buffer_interleaved
+lame_encode_buffer_interleaved_int
 lame_encode_buffer_float
 lame_encode_buffer_ieee_float
 lame_encode_buffer_interleaved_ieee_float

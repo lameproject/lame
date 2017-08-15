@@ -13170,21 +13170,59 @@ fi
 
 
 
-if test "${GCC}" = "yes"; then
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking version of GCC" >&5
-$as_echo_n "checking version of GCC... " >&6; }
-	GCC_version=`${CC} --version | sed -n '1s/^[^ ]* (.*) //;s/ .*$//;1p'`
-	case ${GCC_version} in
-	0-9*0-9*)
+if test "x${GCC}" = "xyes"; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking compiler" >&5
+$as_echo_n "checking compiler... " >&6; }
+	COMPILER_TYPE="`${CC} --version | head -1 | sed -e '1,$s/version.*//g'`"
+	case "${COMPILER_TYPE}" in
+	*gcc*)
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: gcc" >&5
+$as_echo "gcc" >&6; }
+		HAVE_GCC=yes
+		HAVE_CLANG=no
+		;;
+	*clang*)
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: clang" >&5
+$as_echo "clang" >&6; }
+		HAVE_CLANG=yes
+		HAVE_GCC=no
 		;;
 	*)
-		# probably not gcc...
-		GCC_version=`${CC} --version | sed -n 's/.*clang version /clang_version_/;s/ .*$//;1p'`
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: unknown" >&5
+$as_echo "unknown" >&6; }
+		HAVE_GCC=no
+		HAVE_CLANG=no
 		;;
 	esac
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ${GCC_version}" >&5
+
+	if test "${HAVE_GCC}" = "yes"; then
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: checking version of GCC" >&5
+$as_echo_n "checking version of GCC... " >&6; }
+		GCC_version="`${CC} --version | sed -n '1s/^[^ ]* (.*) //;s/ .*$//;1p'`"
+		case "${GCC_version}" in
+		0-9*0-9*)
+			{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ${GCC_version}" >&5
 $as_echo "${GCC_version}" >&6; }
+			;;
+		*)
+			# probably not gcc...
+			{ $as_echo "$as_me:${as_lineno-$LINENO}: result: unknown compiler version pattern" >&5
+$as_echo "unknown compiler version pattern" >&6; }
+			HAVE_GCC=no
+			;;
+		esac
+	fi
+
+	if test "${HAVE_CLANG}" = "yes"; then
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: checking version of clang" >&5
+$as_echo_n "checking version of clang... " >&6; }
+		CLANG_version="`${CC} --version | sed -n 's/.*clang version //;s/ .*$//;1p'`"
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ${CLANG_version}" >&5
+$as_echo "${CLANG_version}" >&6; }
+	fi
 fi
+
+
 
 ac_fn_c_check_header_mongrel "$LINENO" "dmalloc.h" "ac_cv_header_dmalloc_h" "$ac_includes_default"
 if test "x$ac_cv_header_dmalloc_h" = xyes; then :
@@ -17341,7 +17379,7 @@ else
 fi
 
 
-if test "x$GCC" = "xyes"; then
+if test "x$HAVE_GCC" = "xyes" -o "x$HAVE_CLANG" = "xyes"; then
 	# gcc defaults. OS specific options go in versious sections below
 	# from the gcc man pages:  "there is no reason to use -pedantic"
 	if test "x${with_gnu_ld}" = "xyes"; then
@@ -17352,57 +17390,53 @@ if test "x$GCC" = "xyes"; then
 	fi
 
 	# GCC version specific generic options
-	case "${GCC_version}" in
-	2.96*)
-        	# for buggy version of gcc shipped with RH7.1, back of on some
-        	# optimizations
-        	OPTIMIZATION="-O -fomit-frame-pointer -ffast-math \
-			-funroll-loops"
-		OPTIMIZATION_FULL="-fmove-all-movables -freduce-all-givs \
-			-fsched-interblock -fbranch-count-reg -fforce-addr \
-			-fforce-mem"
-        	;;
-	3.0*)
-		# -funroll-loops seems to produce buggy code with gcc 3.0.3
-		OPTIMIZATION="-O -fomit-frame-pointer -ffast-math"
-		OPTIMIZATION_FULL="-fmove-all-movables -freduce-all-givs \
-			-fbranch-count-reg -fforce-addr -fforce-mem"
-		;;
-	3.*|4.0.*|4.1.*)
-		# -fomit-frame-pointer seems to be buggy on cygwin
-		case ${host_os} in
-		*cygwin*)
-			OMIT_FRAME_POINTER=
+	if test "x${HAVE_GCC}" = "xyes"; then
+		case "${GCC_version}" in
+		2.96*)
+        		# for buggy version of gcc shipped with RH7.1, back of on some
+        		# optimizations
+        		OPTIMIZATION="-O -fomit-frame-pointer -ffast-math \
+				-funroll-loops"
+			OPTIMIZATION_FULL="-fmove-all-movables -freduce-all-givs \
+				-fsched-interblock -fbranch-count-reg -fforce-addr \
+				-fforce-mem"
+        		;;
+		3.0*)
+			# -funroll-loops seems to produce buggy code with gcc 3.0.3
+			OPTIMIZATION="-O -fomit-frame-pointer -ffast-math"
+			OPTIMIZATION_FULL="-fmove-all-movables -freduce-all-givs \
+				-fbranch-count-reg -fforce-addr -fforce-mem"
+			;;
+		3.*|4.0.*|4.1.*)
+			# -fomit-frame-pointer seems to be buggy on cygwin
+			case ${host_os} in
+			*cygwin*)
+				OMIT_FRAME_POINTER=
+				;;
+			*)
+				OMIT_FRAME_POINTER=-fomit-frame-pointer
+				;;
+			esac
+
+			OPTIMIZATION="-O3 ${OMIT_FRAME_POINTER} -ffast-math"
+			OPTIMIZATION_FULL="-fmove-all-movables -freduce-all-givs \
+				-fbranch-count-reg -fforce-addr -fforce-mem"
+			;;
+		456789.*)
+			OPTIMIZATION="-O3 -fomit-frame-pointer -ffast-math"
+			OPTIMIZATION_FULL="-fbranch-count-reg -fforce-addr"
 			;;
 		*)
-			OMIT_FRAME_POINTER=-fomit-frame-pointer
+			# default
+			OPTIMIZATION="-O3 ${OMIT_FRAME_POINTER} -ffast-math \
+				-funroll-loops"
+			OPTIMIZATION_FULL="-fbranch-count-reg -fforce-addr"
 			;;
 		esac
 
-		OPTIMIZATION="-O3 ${OMIT_FRAME_POINTER} -ffast-math"
-		OPTIMIZATION_FULL="-fmove-all-movables -freduce-all-givs \
-			-fbranch-count-reg -fforce-addr -fforce-mem"
-		;;
-	4.*)
-		OPTIMIZATION="-O3 -fomit-frame-pointer -ffast-math"
-		OPTIMIZATION_FULL="-fbranch-count-reg -fforce-addr"
-		;;
-	clang_version_3.*)
-		OPTIMIZATION="-O3 ${OMIT_FRAME_POINTER} -ffast-math"
-		OPTIMIZATION_FULL="-fmove-all-movables -freduce-all-givs \
-			-fbranch-count-reg -fforce-addr -fforce-mem"
-		;;
-	*)
-		# default
-		OPTIMIZATION="-O3 ${OMIT_FRAME_POINTER} -ffast-math \
-			-funroll-loops"
-		OPTIMIZATION_FULL="-fbranch-count-reg -fforce-addr"
-		;;
-	esac
-
-
-	# GCC version independend generic options
-	OPTIMIZATION_NORM="-fschedule-insns2"
+		# GCC version independend generic options
+		OPTIMIZATION_NORM="-fschedule-insns2"
+	fi
 
 
 	# generic CPU specific options
@@ -17411,7 +17445,7 @@ if test "x$GCC" = "xyes"; then
 		case "${GCC_version}" in
 		3.0*)
 			;;
-		3.*|4.*)
+		3456789.*)
 			# doesn't work on 3.0.x, but on 3.[12] and
 			# hopefully on every other release after that too
 			if test -x /usr/bin/isalist; then
@@ -17426,7 +17460,7 @@ if test "x$GCC" = "xyes"; then
 		;;
 	*86)
 		case "${GCC_version}" in
-		3.*|4.*)
+		3456789.*)
 			OPTIMIZATION="${OPTIMIZATION} \
 				-maccumulate-outgoing-args"
 			;;
@@ -17449,82 +17483,117 @@ if test "x$GCC" = "xyes"; then
 		OPTIMIZATION="${OPTIMIZATION} ${OPTIMIZATION_NORM} \
 			${OPTIMIZATION_FULL}"
 
-		# some hardware dependend options
-		case "${GCC_version}" in
-		2.9*|3.*|4.0.*|4.1.*)
-			# "new" GCC, use some "new" CPU specific optimizations
-			# use -mtune instead of -m486 or -mcpu= etc, since they are
-			# deprecated by GCC <rbrito>
-			case ${host_cpu} in
-			*486)
-				OPTIMIZATION="${OPTIMIZATION} -mcpu=i486 \
-					-mfancy-math-387"
-				;;
-			*586)
-				OPTIMIZATION="${OPTIMIZATION} -mcpu=pentium \
-					-march=pentium -mfancy-math-387"
-				;;
-			*686)
-				OPTIMIZATION="${OPTIMIZATION} -mcpu=pentiumpro \
-					-march=pentiumpro -mfancy-math-387 \
-					-malign-double"
-				;;
-			*86)
-				OPTIMIZATION="${OPTIMIZATION} -mfancy-math-387"
-				;;
-			alpha*)
-				OPTIMIZATION="${OPTIMIZATION} -mfp-regs"
+		if test "${HAVE_GCC}" = "yes"; then
+			# some hardware dependend options
+			case "${GCC_version}" in
+			2.9*|3.*|4.0.*|4.1.*)
+				# "new" GCC, use some "new" CPU specific optimizations
+				# use -mtune instead of -m486 or -mcpu= etc, since they are
+				# deprecated by GCC <rbrito>
+				case ${host_cpu} in
+				*486)
+					OPTIMIZATION="${OPTIMIZATION} -mcpu=i486 \
+						-mfancy-math-387"
+					;;
+				*586)
+					OPTIMIZATION="${OPTIMIZATION} -mcpu=pentium \
+						-march=pentium -mfancy-math-387"
+					;;
+				*686)
+					OPTIMIZATION="${OPTIMIZATION} -mcpu=pentiumpro \
+						-march=pentiumpro -mfancy-math-387 \
+						-malign-double"
+					;;
+				*86)
+					OPTIMIZATION="${OPTIMIZATION} -mfancy-math-387"
+					;;
+				alpha*)
+					OPTIMIZATION="${OPTIMIZATION} -mfp-regs"
 
 $as_echo "#define FLOAT double" >>confdefs.h
 
-				# add "-mcpu=21164a -Wa,-m21164a" to optimize
-				# for 21164a (ev56) CPU
+					# add "-mcpu=21164a -Wa,-m21164a" to optimize
+					# for 21164a (ev56) CPU
+					;;
+				*)
+					OPTIMIZATION="${OPTIMIZATION} -fdelayed-branch"
+					;;
+				esac
+				;;
+			456789.*)
+				case ${host_cpu} in
+				*486)
+					OPTIMIZATION="${OPTIMIZATION} -march=i486"
+					;;
+				*586)
+					OPTIMIZATION="${OPTIMIZATION} -march=i586 \
+						-mtune=native"
+					;;
+				*686)
+					OPTIMIZATION="${OPTIMIZATION} -march=i686 \
+						-mtune=native"
+					;;
+				*86)
+					OPTIMIZATION="${OPTIMIZATION} -march=native \
+						-mtune=native"
+					;;
+				arm*-gnueabi)
+					if  -z "$(echo ${GCC_version} | awk '/4\.0/')" ; then
+						# Work round buggy softfloat optimization in ARM EABI compilers
+						# -gnueabi in only gcc-4.1 onwards
+						OPTIMIZATION="${OPTIMIZATION} -fno-finite-math-only"
+					fi
+					;;
+				esac
 				;;
 			*)
-				OPTIMIZATION="${OPTIMIZATION} -fdelayed-branch"
-				;;
-			esac
-			;;
-		4.*)
-			case ${host_cpu} in
-			*486)
-				OPTIMIZATION="${OPTIMIZATION} -march=i486"
-				;;
-			*586)
-				OPTIMIZATION="${OPTIMIZATION} -march=i586 \
-					-mtune=native"
-				;;
-			*686)
-				OPTIMIZATION="${OPTIMIZATION} -march=i686 \
-					-mtune=native"
-				;;
-			*86)
-				OPTIMIZATION="${OPTIMIZATION} -march=native \
-					-mtune=native"
-				;;
-			arm*-gnueabi)
-				if  -z "$(echo ${GCC_version} | awk '/4\.0/')" ; then
-					# Work round buggy softfloat optimization in ARM EABI compilers
-					# -gnueabi in only gcc-4.1 onwards
-					OPTIMIZATION="${OPTIMIZATION} -fno-finite-math-only"
-				fi
-				;;
-			esac
-			;;
-		*)
-			# no special optimization for other versions
-			{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+				# no special optimization for other versions
+				{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-			expopt_msg_result_printed=yes
-			{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: LAME doesn't know about your version (${GCC_version}) of gcc" >&5
+				expopt_msg_result_printed=yes
+				{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: LAME doesn't know about your version (${GCC_version}) of gcc" >&5
 $as_echo "$as_me: WARNING: LAME doesn't know about your version (${GCC_version}) of gcc" >&2;}
-			;;
-		esac
+				;;
+			esac
+		fi
 		;;
 	*)
 		as_fn_error $? "bad value �${CONFIG_EXPOPT}� for expopt option" "$LINENO" 5
 		;;
 	esac
+
+
+	if test "x${HAVE_CLANG}" = "xyes"; then
+		case "${CLANG_VERSION}" in
+		3.89*|45.*)
+			OPTIMIZATION="-Ofast"
+			;;
+		*)
+			OPTIMIZATION="-O3"
+			;;
+		esac
+
+		# generic CPU specific options
+		case ${host_cpu} in
+		*486)
+			OPTIMIZATION="${OPTIMIZATION} -march=i486"
+			;;
+		*586)
+			OPTIMIZATION="${OPTIMIZATION} -march=i586 \
+				-mtune=native"
+			;;
+		*686)
+			OPTIMIZATION="${OPTIMIZATION} -march=i686 \
+				-mtune=native"
+			;;
+		*86)
+			OPTIMIZATION="${OPTIMIZATION} -march=native \
+				-mtune=native"
+			;;
+		esac
+
+	fi
+
 
 	if test "${expopt_msg_result_printed}" = "no" ; then
 		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ${CONFIG_EXPOPT}" >&5

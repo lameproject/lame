@@ -2126,28 +2126,35 @@ lame_get_totalframes(const lame_global_flags * gfp)
         lame_internal_flags const *const gfc = gfp->internal_flags;
         if (is_lame_internal_flags_valid(gfc)) {
             SessionConfig_t const *const cfg = &gfc->cfg;
-            unsigned long const max_value = (0ul-1ul) - 3ul * 576ul;
             unsigned long const pcm_samples_per_frame = 576 * cfg->mode_gr;
             unsigned long pcm_samples_to_encode = gfp->num_samples;
             unsigned long end_padding = 0;
+            int frames = 0;
+
+            if (pcm_samples_to_encode == (0ul-1ul))
+                return 0; /* unknown */
 
             /* estimate based on user set num_samples: */
-            if (gfp->samplerate_in != gfp->samplerate_out) {
+            if (cfg->samplerate_in != cfg->samplerate_out) {
                 /* resampling, estimate new samples_to_encode */
-                double resampled_samples_to_encode = 0.0;
-                if (gfp->samplerate_in > 0) {
+                double resampled_samples_to_encode = 0.0, frames_f = 0.0;
+                if (cfg->samplerate_in > 0) {
                     resampled_samples_to_encode = pcm_samples_to_encode;
-                    resampled_samples_to_encode *= gfp->samplerate_out;
-                    resampled_samples_to_encode /= gfp->samplerate_in;
+                    resampled_samples_to_encode *= cfg->samplerate_out;
+                    resampled_samples_to_encode /= cfg->samplerate_in;
                 }
                 if (resampled_samples_to_encode <= 0.0)
                     return 0; /* unlikely to happen, so what, no estimate! */
-                if (resampled_samples_to_encode >= max_value)
+                frames_f = floor(resampled_samples_to_encode / pcm_samples_per_frame);
+                if (frames_f >= (INT_MAX-2))
                     return 0; /* overflow, happens eventually, no estimate! */
-                pcm_samples_to_encode = resampled_samples_to_encode+0.5;
+                frames = frames_f;
+                resampled_samples_to_encode -= frames * pcm_samples_per_frame;
+                pcm_samples_to_encode = ceil(resampled_samples_to_encode);
             }
-            if (pcm_samples_to_encode >= max_value) {
-                return 0; /* unknown or overflow, no estimate! */
+            else {
+                frames = pcm_samples_to_encode / pcm_samples_per_frame;
+                pcm_samples_to_encode -= frames * pcm_samples_per_frame;
             }
             pcm_samples_to_encode += 576ul;
             end_padding = pcm_samples_per_frame - (pcm_samples_to_encode % pcm_samples_per_frame);
@@ -2155,10 +2162,11 @@ lame_get_totalframes(const lame_global_flags * gfp)
                 end_padding += pcm_samples_per_frame;
             }
             pcm_samples_to_encode += end_padding;
+            frames += (pcm_samples_to_encode / pcm_samples_per_frame);
             /* check to see if we underestimated totalframes */
             /*    if (totalframes < gfp->frameNum) */
             /*        totalframes = gfp->frameNum; */
-            return pcm_samples_to_encode / pcm_samples_per_frame;
+            return frames;
         }
     }
     return 0;

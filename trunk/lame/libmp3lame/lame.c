@@ -1976,6 +1976,17 @@ lame_encode_buffer_interleaved(lame_global_flags * gfp,
 }
 
 
+int
+lame_encode_buffer_interleaved_int(lame_t gfp,
+                                   const int pcm[], const int nsamples,
+                                   unsigned char *mp3buf, const int mp3buf_size)
+{
+    /* input is assumed to be normalized to +/- MAX(int) for full scale */
+    FLOAT const norm = (1.0 / (1L << (8 * sizeof(int)-16)));
+    return lame_encode_buffer_template(gfp, pcm, pcm + 1, nsamples, mp3buf, mp3buf_size, pcm_int_type, 2, norm);
+}
+
+
 
 
 /*****************************************************************

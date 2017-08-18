@@ -646,6 +646,7 @@ lame_main(lame_t gf, int argc, char **argv)
         outf = init_files(gf, inPath, outPath);
     }
     if (outf == NULL) {
+        close_infile();
         return -1;
     }
     /* turn off automatic writing of ID3 tag data into mp3 stream 

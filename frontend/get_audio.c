@@ -1778,16 +1778,13 @@ open_mpeg_file_part2(lame_t gfp, FILE* musicin, char const *inPath, int *enc_del
         if (global_ui_config.silent < 10) {
             error_printf("Error reading headers in mp3 input file %s.\n", inPath);
         }
-        close_input_file(musicin);
         return 0;
     }
 #endif
     if (!set_input_num_channels(gfp, global_decoder.mp3input_data.stereo)) {
-        close_input_file(musicin);
         return 0;
     }
     if (!set_input_samplerate(gfp, global_decoder.mp3input_data.samplerate)) {
-        close_input_file(musicin);
         return 0;
     }
     (void) lame_set_num_samples(gfp, global_decoder.mp3input_data.nsamp);
@@ -1892,6 +1889,7 @@ open_mpeg_file(lame_t gfp, char const *inPath, int *enc_delay, int *enc_padding)
     }
 #endif
     if ( 0 == open_mpeg_file_part2(gfp, musicin, inPath, enc_delay, enc_padding) ) {
+        close_input_file(musicin);
         return 0;
     }
     if (lame_get_num_samples(gfp) == MAX_U_32_NUM && musicin != stdin) {

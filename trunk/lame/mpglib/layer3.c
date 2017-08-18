@@ -1254,6 +1254,7 @@ maybe still wrong??? (copy 12 to 13?) */
         }
 
         is_p = scalefac[20]; /* copy l-band 20 to l-band 21 */
+        idx = bi->longIdx[21];
         if (is_p != 7) {
             int     sb;
             real    t1 = tabl1[is_p], t2 = tabl2[is_p];

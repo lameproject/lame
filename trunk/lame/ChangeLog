@@ -11,6 +11,36 @@
 
 -- 
 
+2017-08-18 22:06  robert
+
+	* mpglib/layer3.c:
+
+	fix for bug #466: "stack-buffer-overflow in ./mpglib/layer3.c:1264 III_i_stereo"
+
+2017-08-18 21:56  robert
+
+	* frontend/: get_audio.c, lame_main.c:
+
+	fix for bug #464: attempting double-free
+
+2017-08-15 19:51  robert
+
+	* libmp3lame/set_get.c:
+
+	estimation of total number of frames changed
+
+2017-08-15 15:40  aleidinger
+
+	* make_changelog.sh:
+
+	add comment how to generate the input file
+
+2017-08-15 15:35  aleidinger
+
+	* ChangeLog:
+
+	update ChangeLog
+
 2017-08-15 15:20  aleidinger
 
 	* Makefile.in, ACM/Makefile.in, ACM/ADbg/Makefile.in,
@@ -47,7 +77,13 @@
 
 2017-08-15 14:51  aleidinger
 
-	* include/lame.h, include/libmp3lame.sym, libmp3lame/lame.c:
+	* include/: lame.h, libmp3lame.sym:
+
+	"patch #27: Add lame_encode_buffer_interleaved_int() by Michael Fink"
+
+2017-08-15 14:51  aleidinger
+
+	* libmp3lame/lame.c:
 
 	LIBRARY  libmp3lame.DLL
 	EXPORTS
@@ -3081,17 +3117,17 @@
 
 	Add missing files, remove deleted ones.
 
-2008-11-09 14:06  robert
-
-	* vc_solution/Makefile.am (lame3_98):
-
-	file Makefile.am was added on branch lame3_98 on 2010-02-26 01:56:52 +0000
-
 2008-11-09 14:06  aleidinger
 
 	* vc_solution/Makefile.am:
 
 	Add missing automake Makefile.
+
+2008-11-09 14:06  robert
+
+	* vc_solution/Makefile.am (lame3_98):
+
+	file Makefile.am was added on branch lame3_98 on 2010-02-26 01:56:52 +0000
 
 2008-11-09 14:05  aleidinger
 

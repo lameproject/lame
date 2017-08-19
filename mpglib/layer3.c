@@ -430,13 +430,13 @@ III_get_side_info_1(PMPSTR mp, int stereo,
                 r1c = getbits_fast(mp, 3);
                 region0index = r0c+1;
                 if (region0index > 22) {
+                    lame_report_fnc(mp->report_err, "region0index=%d > 22\n", region0index);
                     region0index = 22;
-                    lame_report_fnc(mp->report_err, "region0index > 22\n");
                 }
                 region1index = r0c+1 + r1c+1;
                 if (region1index > 22) {
+                    lame_report_fnc(mp->report_err, "region1index=%d > 22\n", region1index);
                     region1index = 22;
-                    lame_report_fnc(mp->report_err, "region1index > 22\n");
                 }
                 gr_infos->region1start = bandInfo[sfreq].longIdx[region0index] >> 1;
                 gr_infos->region2start = bandInfo[sfreq].longIdx[region1index] >> 1;
@@ -532,13 +532,13 @@ III_get_side_info_2(PMPSTR mp, int stereo, int ms_stereo, long sfreq, int single
             r1c = getbits_fast(mp, 3);
             region0index = r0c+1;
             if (region0index > 22) {
+                lame_report_fnc(mp->report_err, "region0index=%d > 22\n", region0index);
                 region0index = 22;
-                lame_report_fnc(mp->report_err, "region0index > 22\n");
             }
             region1index = r0c+1 + r1c+1;
             if (region1index > 22) {
+                lame_report_fnc(mp->report_err, "region1index=%d > 22\n", region1index);
                 region1index = 22;
-                lame_report_fnc(mp->report_err, "region1index > 22\n");
             }
             gr_infos->region1start = bandInfo[sfreq].longIdx[region0index] >> 1;
             gr_infos->region2start = bandInfo[sfreq].longIdx[region1index] >> 1;
@@ -715,6 +715,10 @@ III_dequantize_sample(PMPSTR mp, real xr[SBLIMIT][SSLIMIT], int *scf,
     int    *me;
     real const * const xr_endptr = &xr[SBLIMIT-1][SSLIMIT-1];
 
+    int bobug = 0;
+    int bobug_sb = 0, bobug_l3=0;
+#define BUFFER_OVERFLOW_BUG() if(!bobug){bobug=1;bobug_sb=cb;bobug_l3=l3;}else
+
     /* lame_report_fnc(mp->report_dbg,"part2remain = %d, gr_infos->part2_3_length = %d, part2bits = %d\n",
        part2remain, gr_infos->part2_3_length, part2bits); */
 
@@ -842,8 +846,8 @@ III_dequantize_sample(PMPSTR mp, real xr[SBLIMIT][SSLIMIT], int *scf,
 
                 if (xrpnt <= xr_endptr)
                     *xrpnt = xr_value;
-                else /* well, there was a bug report, where this happened! */
-                    lame_report_fnc(mp->report_err, "hip: OOPS, xrpnt>xr_endptr\n");
+                else
+                    BUFFER_OVERFLOW_BUG();
                 xrpnt += step;
                 if (y == 15) {
                     max[lwin] = cb;
@@ -867,8 +871,8 @@ III_dequantize_sample(PMPSTR mp, real xr[SBLIMIT][SSLIMIT], int *scf,
 
                 if (xrpnt <= xr_endptr)
                     *xrpnt = xr_value;
-                else /* well, there was a bug report, where this happened! */
-                    lame_report_fnc(mp->report_err, "hip: OOPS, xrpnt>xr_endptr\n");
+                else
+                    BUFFER_OVERFLOW_BUG();
                 xrpnt += step;
             }
         }
@@ -922,14 +926,12 @@ III_dequantize_sample(PMPSTR mp, real xr[SBLIMIT][SSLIMIT], int *scf,
 
                 if (xrpnt <= xr_endptr)
                     *xrpnt = xr_value;
-                else /* well, there was a bug report, where this happened! */
-                    lame_report_fnc(mp->report_err, "hip: OOPS, part2remain=%d && l3=%d && xrpnt>xr_endptr  cb=%d i=%d lwin=%d\n",part2remain,l3,cb,i,lwin);
+                else 
+                    BUFFER_OVERFLOW_BUG();
                 xrpnt += step;
             }
         }
-        if ((m < me) && (xrpnt >= xr_endptr))
-            lame_report_fnc(mp->report_err, "hip: OOPS me-m = %d\n",(int)(me-m));
-        while ((m < me) && (xrpnt < xr_endptr)) {
+        while (m < me) {
             if (!mc) {
                 mc = *m++;
                 xrpnt = ((real *) xr) + *m++;
@@ -940,9 +942,15 @@ III_dequantize_sample(PMPSTR mp, real xr[SBLIMIT][SSLIMIT], int *scf,
                 m++;    /* cb */
             }
             mc--;
-            *xrpnt = 0.0;
+            if (xrpnt <= xr_endptr)
+                *xrpnt = 0.0;
+            else
+                BUFFER_OVERFLOW_BUG();
             xrpnt += step;
-            *xrpnt = 0.0;
+            if (xrpnt <= xr_endptr)
+                *xrpnt = 0.0;
+            else
+                BUFFER_OVERFLOW_BUG();
             xrpnt += step;
 /* we could add a little opt. here:
  * if we finished a band for window 3 or a long band
@@ -1021,8 +1029,8 @@ III_dequantize_sample(PMPSTR mp, real xr[SBLIMIT][SSLIMIT], int *scf,
 
                 if (xrpnt <= xr_endptr)
                     *xrpnt++ = xr_value;
-                else /* well, there was a bug report, where this happened! */
-                    lame_report_fnc(mp->report_err, "hip: OOPS, xrpnt>xr_endptr\n");
+                else
+                    BUFFER_OVERFLOW_BUG();
 
                 if (y == 15) {
                     max = cb;
@@ -1046,8 +1054,8 @@ III_dequantize_sample(PMPSTR mp, real xr[SBLIMIT][SSLIMIT], int *scf,
 
                 if (xrpnt <= xr_endptr)
                     *xrpnt++ = xr_value;
-                else /* well, there was a bug report, where this happened! */
-                    lame_report_fnc(mp->report_err, "hip: OOPS, xrpnt>xr_endptr\n");
+                else
+                    BUFFER_OVERFLOW_BUG();
             }
         }
 
@@ -1095,8 +1103,8 @@ III_dequantize_sample(PMPSTR mp, real xr[SBLIMIT][SSLIMIT], int *scf,
 
                 if (xrpnt <= xr_endptr)
                     *xrpnt++ = xr_value;
-                else /* well, there was a bug report, where this happened! */
-                    lame_report_fnc(mp->report_err, "hip: OOPS, xrpnt>xr_endptr\n");
+                else
+                    BUFFER_OVERFLOW_BUG();
             }
         }
 
@@ -1108,6 +1116,21 @@ III_dequantize_sample(PMPSTR mp, real xr[SBLIMIT][SSLIMIT], int *scf,
 
         gr_infos->maxbandl = max + 1;
         gr_infos->maxb = longLimit[sfreq][gr_infos->maxbandl];
+    }
+#undef BUFFER_OVERFLOW_BUG
+    if (bobug) { /* well, there was a bug report, where this happened! */
+        lame_report_fnc
+          (mp->report_err
+          ,"hip: OOPS, part2remain=%d l3=%d cb=%d bv=%d region1=%d region2=%d b-type=%d mixed=%d\n"
+          ,part2remain
+          ,bobug_l3
+          ,bobug_sb
+          ,gr_infos->big_values
+          ,gr_infos->region1start
+          ,gr_infos->region2start
+          ,gr_infos->block_type
+          ,gr_infos->mixed_block_flag
+          );
     }
 
     while (part2remain > 16) {
@@ -1123,6 +1146,14 @@ III_dequantize_sample(PMPSTR mp, real xr[SBLIMIT][SSLIMIT], int *scf,
     return 0;
 }
 
+/* intensity position, transmitted via a scalefactor value, allowed range is 0 - 15 */
+static
+int scalefac_to_is_pos(int sf)
+{
+    if (0 <= sf && sf <= 15)
+        return sf;
+    return (sf < 0 ? 0 : 15);
+}
 
 /* 
  * III_stereo: calculate real channel values for Joint-I-Stereo-mode
@@ -1170,6 +1201,7 @@ III_i_stereo(real xr_buf[2][SBLIMIT][SSLIMIT], int *scalefac,
 
             for (; sfb < 12; sfb++) {
                 is_p = scalefac[sfb * 3 + lwin - gr_infos->mixed_block_flag]; /* scale: 0-15 */
+                is_p = scalefac_to_is_pos(is_p);
                 if (is_p != 7) {
                     real    t1, t2;
                     sb = bi->shortDiff[sfb];
@@ -1195,6 +1227,7 @@ maybe still wrong??? (copy 12 to 13?) */
             sb = bi->shortDiff[11];
             idx = bi->shortIdx[11] + lwin;
 #endif
+            is_p = scalefac_to_is_pos(is_p);
             if (is_p != 7) {
                 real    t1, t2;
                 t1 = tabl1[is_p];
@@ -1217,6 +1250,7 @@ maybe still wrong??? (copy 12 to 13?) */
             for (; sfb < 8; sfb++) {
                 int     sb = bi->longDiff[sfb];
                 int     is_p = scalefac[sfb]; /* scale: 0-15 */
+                is_p = scalefac_to_is_pos(is_p);
                 if (is_p != 7) {
                     real    t1, t2;
                     t1 = tabl1[is_p];
@@ -1239,6 +1273,7 @@ maybe still wrong??? (copy 12 to 13?) */
         for (; sfb < 21; sfb++) {
             int     sb = bi->longDiff[sfb];
             is_p = scalefac[sfb]; /* scale: 0-15 */
+            is_p = scalefac_to_is_pos(is_p);
             if (is_p != 7) {
                 real    t1, t2;
                 t1 = tabl1[is_p];
@@ -1254,6 +1289,7 @@ maybe still wrong??? (copy 12 to 13?) */
         }
 
         is_p = scalefac[20]; /* copy l-band 20 to l-band 21 */
+        is_p = scalefac_to_is_pos(is_p);
         idx = bi->longIdx[21];
         if (is_p != 7) {
             int     sb;

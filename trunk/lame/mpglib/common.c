@@ -198,6 +198,11 @@ decode_header(PMPSTR mp, struct frame *fr, unsigned long newhead)
 
 
     fr->lay = 4 - ((newhead >> 17) & 3);
+
+    if (fr->lay != 3 && fr->mpeg25) {
+        lame_report_fnc(mp->report_err, "MPEG-2.5 is supported by Layer3 only\n");
+        return 0;
+    }
     if (((newhead >> 10) & 0x3) == 0x3) {
         lame_report_fnc(mp->report_err, "Stream error\n");
         return 0;

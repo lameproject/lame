@@ -246,10 +246,11 @@ hip_init_tables_layer3(void)
         int    *mp;
         int     cb, lwin;
         short const *bdf;
+        int switch_idx = (j < 3) ? 8 : 6;
 
         mp = map[j][0] = mapbuf0[j];
         bdf = bi->longDiff;
-        for (i = 0, cb = 0; cb < 8; cb++, i += *bdf++) {
+        for (i = 0, cb = 0; cb < switch_idx; cb++, i += *bdf++) {
             *mp++ = (*bdf) >> 1;
             *mp++ = i;
             *mp++ = 3;
@@ -512,17 +513,17 @@ III_get_side_info_2(PMPSTR mp, int stereo, int ms_stereo, long sfreq, int single
                 /* exit(1); */
             }
             /* region_count/start parameters are implicit in this case. */
-	          if (gr_infos->block_type == 2) {
-	              if (gr_infos->mixed_block_flag == 0)
-	                  gr_infos->region1start = 36 >> 1;
-	              else
-	                  gr_infos->region1start = 48 >> 1;
-	          }
+            if (gr_infos->block_type == 2) {
+                if (gr_infos->mixed_block_flag == 0)
+                    gr_infos->region1start = 36 >> 1;
+                else
+                    gr_infos->region1start = 48 >> 1;
+            }
             else
-	              gr_infos->region1start = 54 >> 1;
-	          if (sfreq == 8)
-	              gr_infos->region1start *= 2;
-	          gr_infos->region2start = 576 >> 1;
+                gr_infos->region1start = 54 >> 1;
+            if (sfreq == 8)
+                gr_infos->region1start *= 2;
+            gr_infos->region2start = 576 >> 1;
         }
         else {
             unsigned int i, r0c, r1c, region0index, region1index;

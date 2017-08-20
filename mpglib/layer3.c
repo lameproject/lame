@@ -140,7 +140,17 @@ get1bit(PMPSTR mp)
     return rval >> 7;
 }
 
-
+static real
+get_gain(real const* gain_ptr, int idx, int* overflow)
+{
+    static const real* const gainpow2_end_ptr = gainpow2 + (sizeof(gainpow2)/sizeof(gainpow2[0])) -1;
+    real const * ptr = &gain_ptr[idx];
+    if (&gain_ptr[idx] > gainpow2_end_ptr) {
+        ptr = gainpow2_end_ptr;
+        if (overflow) *overflow = 1;
+    }
+    return *ptr;
+}
 
 
 /* 
@@ -716,6 +726,7 @@ III_dequantize_sample(PMPSTR mp, real xr[SBLIMIT][SSLIMIT], int *scf,
     int    *me;
     real const * const xr_endptr = &xr[SBLIMIT-1][SSLIMIT-1];
 
+    int isbug = 0;
     int bobug = 0;
     int bobug_sb = 0, bobug_l3=0;
 #define BUFFER_OVERFLOW_BUG() if(!bobug){bobug=1;bobug_sb=cb;bobug_l3=l3;}else
@@ -807,11 +818,11 @@ III_dequantize_sample(PMPSTR mp, real xr[SBLIMIT][SSLIMIT], int *scf,
                     lwin = *m++;
                     cb = *m++;
                     if (lwin == 3) {
-                        v = gr_infos->pow2gain[(*scf++) << shift];
+                        v = get_gain(gr_infos->pow2gain, (*scf++) << shift, &isbug);
                         step = 1;
                     }
                     else {
-                        v = gr_infos->full_gain[lwin][(*scf++) << shift];
+                        v = get_gain(gr_infos->full_gain[lwin], (*scf++) << shift, &isbug);
                         step = 3;
                     }
                 }
@@ -900,11 +911,11 @@ III_dequantize_sample(PMPSTR mp, real xr[SBLIMIT][SSLIMIT], int *scf,
                         lwin = *m++;
                         cb = *m++;
                         if (lwin == 3) {
-                            v = gr_infos->pow2gain[(*scf++) << shift];
+                            v = get_gain(gr_infos->pow2gain, (*scf++) << shift, &isbug);
                             step = 1;
                         }
                         else {
-                            v = gr_infos->full_gain[lwin][(*scf++) << shift];
+                            v = get_gain(gr_infos->full_gain[lwin], (*scf++) << shift, &isbug);
                             step = 3;
                         }
                     }
@@ -995,7 +1006,7 @@ III_dequantize_sample(PMPSTR mp, real xr[SBLIMIT][SSLIMIT], int *scf,
 
                 if (!mc) {
                     mc = *m++;
-                    v = gr_infos->pow2gain[((*scf++) + (*pretab++)) << shift];
+                    v = get_gain(gr_infos->pow2gain, ((*scf++) + (*pretab++)) << shift, &isbug);
                     cb = *m++;
                 }
                 {
@@ -1083,7 +1094,7 @@ III_dequantize_sample(PMPSTR mp, real xr[SBLIMIT][SSLIMIT], int *scf,
                     if (!mc) {
                         mc = *m++;
                         cb = *m++;
-                        v = gr_infos->pow2gain[((*scf++) + (*pretab++)) << shift];
+                        v = get_gain(gr_infos->pow2gain, ((*scf++) + (*pretab++)) << shift, &isbug);
                     }
                     mc--;
                 }
@@ -1119,7 +1130,12 @@ III_dequantize_sample(PMPSTR mp, real xr[SBLIMIT][SSLIMIT], int *scf,
         gr_infos->maxb = longLimit[sfreq][gr_infos->maxbandl];
     }
 #undef BUFFER_OVERFLOW_BUG
-    if (bobug) { /* well, there was a bug report, where this happened! */
+    if (bobug) {
+        /* well, there was a bug report, where this happened!
+           The problem was, that mixed blocks summed up to over 576,
+           because of a wrong long/short switching index.
+           It's likely, that the buffer overflow is fixed now, after correcting mixed block map.
+        */
         lame_report_fnc
           (mp->report_err
           ,"hip: OOPS, part2remain=%d l3=%d cb=%d bv=%d region1=%d region2=%d b-type=%d mixed=%d\n"
@@ -1129,6 +1145,23 @@ III_dequantize_sample(PMPSTR mp, real xr[SBLIMIT][SSLIMIT], int *scf,
           ,gr_infos->big_values
           ,gr_infos->region1start
           ,gr_infos->region2start
+          ,gr_infos->block_type
+          ,gr_infos->mixed_block_flag
+          );
+    }
+    if (isbug) {
+        /* there is a bug report, where there is trouble with IS coded short block gain.
+           Is intensity stereo coding implementation correct? Likely not.
+        */
+        int i_stereo = 0;
+        if (mp->fr.mode == MPG_MD_JOINT_STEREO) {
+            i_stereo = mp->fr.mode_ext & 0x1;
+        }
+        lame_report_fnc
+          (mp->report_err
+          ,"hip: OOPS, 'gainpow2' buffer overflow  lsf=%d i-stereo=%d b-type=%d mixed=%d\n"
+          ,mp->fr.lsf
+          ,i_stereo
           ,gr_infos->block_type
           ,gr_infos->mixed_block_flag
           );
@@ -1773,7 +1806,6 @@ decode_layer3_frame(PMPSTR mp, unsigned char *pcm_sample, int *pcm_point,
             else {
                 part2bits = III_get_scale_factors_1(mp, scalefacs[0], gr_infos);
             }
-
             if (mp->pinfo != NULL) {
                 int     i;
                 mp->pinfo->sfbits[gr][0] = part2bits;

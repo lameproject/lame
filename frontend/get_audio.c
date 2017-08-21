@@ -650,10 +650,12 @@ samples_to_skip_at_end(void)
 void
 close_infile(void)
 {
+#if defined(HAVE_MPGLIB)
     if (global.hip != 0) {
         hip_decode_exit(global.hip); /* release mp3decoder memory */
         global. hip = 0;
     }
+#endif
     close_input_file(global.music_in);
 #ifdef LIBSNDFILE
     if (global.snd_file) {

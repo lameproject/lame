@@ -2,7 +2,7 @@
  * id3tag.c -- Write ID3 version 1 and 2 tags.
  *
  * Copyright (C) 2000 Don Melton
- * Copyright (C) 2011-2012 Robert Hegemann
+ * Copyright (C) 2011-2017 Robert Hegemann
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -147,7 +147,7 @@ typedef enum MiscIDs { ID_TXXX = FRAME_ID('T', 'X', 'X', 'X')
         , ID_ENCR = FRAME_ID('E', 'N', 'C', 'R')
         , ID_GRID = FRAME_ID('G', 'R', 'I', 'D')
         , ID_PRIV = FRAME_ID('P', 'R', 'I', 'V')
-        , ID_VSLT = FRAME_ID('V', 'S', 'L', 'T') /* full text string */
+        , ID_USLT = FRAME_ID('U', 'S', 'L', 'T') /* full text string */
         , ID_USER = FRAME_ID('U', 'S', 'E', 'R') /* full text string */
         , ID_PCST = FRAME_ID('P', 'C', 'S', 'T') /* iTunes Podcast indicator, only presence important */
         , ID_WFED = FRAME_ID('W', 'F', 'E', 'D') /* iTunes Podcast URL as TEXT FRAME !!! violates standard */
@@ -197,9 +197,10 @@ debug_tag_spec_flags(lame_internal_flags * gfc, const char* info)
 
 
 static int
-id3v2_add_ucs2(lame_t gfp, uint32_t frame_id, char const *lang, unsigned short const *desc, unsigned short const *text);
+id3v2_add_ucs2_lng(lame_t gfp, uint32_t frame_id, unsigned short const *desc, unsigned short const *text);
 static int
-id3v2_add_latin1(lame_t gfp, uint32_t frame_id, char const *lang, char const *desc, char const *text);
+id3v2_add_latin1_lng(lame_t gfp, uint32_t frame_id, char const *desc, char const *text);
+
 
 static void
 copyV1ToV2(lame_t gfp, int frame_id, char const *s)
@@ -207,7 +208,7 @@ copyV1ToV2(lame_t gfp, int frame_id, char const *s)
     lame_internal_flags *gfc = gfp != 0 ? gfp->internal_flags : 0;
     if (gfc != 0) {
         unsigned int flags = gfc->tag_spec.flags;
-        id3v2_add_latin1(gfp, frame_id, "XXX", 0, s);
+        id3v2_add_latin1_lng(gfp, frame_id, 0, s);
         gfc->tag_spec.flags = flags;
 #if 0
         debug_tag_spec_flags(gfc, "copyV1ToV2");
@@ -560,7 +561,7 @@ id3tag_set_genre_utf16(lame_t gfp, unsigned short const* text)
             return 0;
         }
     }
-    ret = id3v2_add_ucs2(gfp, ID_GENRE, 0, 0, text);
+    ret = id3v2_add_ucs2_lng(gfp, ID_GENRE, 0, text);
     if (ret == 0) {
         gfc->tag_spec.flags |= CHANGED_FLAG;
         gfc->tag_spec.genre_id3v1 = GENRE_INDEX_OTHER;
@@ -757,9 +758,9 @@ setLang(char *dst, char const *src)
 {
     int     i;
     if (src == 0 || src[0] == 0) {
-        dst[0] = 'X';
-        dst[1] = 'X';
-        dst[2] = 'X';
+        dst[0] = 'e';
+        dst[1] = 'n';
+        dst[2] = 'g';
     }
     else {
         for (i = 0; i < 3 && src && *src; ++i) {
@@ -822,11 +823,13 @@ isSameDescriptorUcs2(FrameDataNode const *node, unsigned short const *dsc)
 }
 
 static int
-id3v2_add_ucs2(lame_t gfp, uint32_t frame_id, char const *lang, unsigned short const *desc, unsigned short const *text)
+id3v2_add_ucs2(lame_t gfp, uint32_t frame_id, char const *lng, unsigned short const *desc, unsigned short const *text)
 {
     lame_internal_flags *gfc = gfp != 0 ? gfp->internal_flags : 0;
     if (gfc != 0) {
         FrameDataNode *node = findNode(&gfc->tag_spec, frame_id, 0);
+        char lang[4];
+        setLang(lang, lng);
         if (isMultiFrame(frame_id)) {
             while (node) {
                 if (isSameLang(node->lng, lang)) {
@@ -857,11 +860,13 @@ id3v2_add_ucs2(lame_t gfp, uint32_t frame_id, char const *lang, unsigned short c
 }
 
 static int
-id3v2_add_latin1(lame_t gfp, uint32_t frame_id, char const *lang, char const *desc, char const *text)
+id3v2_add_latin1(lame_t gfp, uint32_t frame_id, char const *lng, char const *desc, char const *text)
 {
     lame_internal_flags *gfc = gfp != 0 ? gfp->internal_flags : 0;
     if (gfc != 0) {
         FrameDataNode *node = findNode(&gfc->tag_spec, frame_id, 0);
+        char lang[4];
+        setLang(lang, lng);
         if (isMultiFrame(frame_id)) {
             while (node) {
                 if (isSameLang(node->lng, lang)) {
@@ -891,6 +896,27 @@ id3v2_add_latin1(lame_t gfp, uint32_t frame_id, char const *lang, char const *de
     return -255;
 }
 
+static char const*
+id3v2_get_language(lame_t gfp)
+{
+    lame_internal_flags const* gfc = gfp ? gfp->internal_flags : 0;
+    if (gfc) return gfc->tag_spec.language;
+    return 0;
+}
+
+static int
+id3v2_add_ucs2_lng(lame_t gfp, uint32_t frame_id, unsigned short const *desc, unsigned short const *text)
+{
+    char const* lang = id3v2_get_language(gfp);
+    return id3v2_add_ucs2(gfp, frame_id, lang, desc, text);
+}
+
+static int
+id3v2_add_latin1_lng(lame_t gfp, uint32_t frame_id, char const *desc, char const *text)
+{
+    char const* lang = id3v2_get_language(gfp);
+    return id3v2_add_latin1(gfp, frame_id, lang, desc, text);
+}
 
 static int
 id3tag_set_userinfo_latin1(lame_t gfp, uint32_t id, char const *fieldvalue)
@@ -902,7 +928,7 @@ id3tag_set_userinfo_latin1(lame_t gfp, uint32_t id, char const *fieldvalue)
         char*   dup = 0;
         local_strdup(&dup, fieldvalue);
         dup[a] = 0;
-        rc = id3v2_add_latin1(gfp, id, "XXX", dup, dup+a+1);
+        rc = id3v2_add_latin1_lng(gfp, id, dup, dup+a+1);
         free(dup);
     }
     return rc;
@@ -915,11 +941,11 @@ id3tag_set_userinfo_ucs2(lame_t gfp, uint32_t id, unsigned short const *fieldval
     int     rc = -7;
     size_t  b = local_ucs2_strlen(fieldvalue);
     int     a = local_ucs2_pos(fieldvalue, separator);
-    if (a >= 0) { 
+    if (a >= 0) {
         unsigned short* dsc = 0, *val = 0;
         local_ucs2_substr(&dsc, fieldvalue, 0, a);
         local_ucs2_substr(&val, fieldvalue, a+1, b);
-        rc = id3v2_add_ucs2(gfp, id, "XXX", dsc, val);
+        rc = id3v2_add_ucs2_lng(gfp, id, dsc, val);
         free(dsc);
         free(val);
     }
@@ -946,13 +972,13 @@ id3tag_set_textinfo_utf16(lame_t gfp, char const *id, unsigned short const *text
         return id3tag_set_genre_utf16(gfp, text);
     }
     if (frame_id == ID_PCST) {
-        return id3v2_add_ucs2(gfp, frame_id, 0, 0, text);
+        return id3v2_add_ucs2_lng(gfp, frame_id, 0, text);
     }
     if (frame_id == ID_USER) {
-        return id3v2_add_ucs2(gfp, frame_id, "XXX", text, 0);
+        return id3v2_add_ucs2_lng(gfp, frame_id, text, 0);
     }
     if (frame_id == ID_WFED) {
-        return id3v2_add_ucs2(gfp, frame_id, 0, text, 0); /* iTunes expects WFED to be a text frame */
+        return id3v2_add_ucs2_lng(gfp, frame_id, text, 0); /* iTunes expects WFED to be a text frame */
     }
     if (isFrameIdMatching(frame_id, FRAME_ID('T', 0, 0, 0))
       ||isFrameIdMatching(frame_id, FRAME_ID('W', 0, 0, 0))) {
@@ -961,7 +987,7 @@ id3tag_set_textinfo_utf16(lame_t gfp, char const *id, unsigned short const *text
             return -2;  /* must be Latin-1 encoded */
         }
 #endif
-        return id3v2_add_ucs2(gfp, frame_id, 0, 0, text);
+        return id3v2_add_ucs2_lng(gfp, frame_id, 0, text);
     }
     return -255;        /* not supported by now */
 }
@@ -992,17 +1018,17 @@ id3tag_set_textinfo_latin1(lame_t gfp, char const *id, char const *text)
         return id3tag_set_genre(gfp, text);
     }
     if (frame_id == ID_PCST) {
-        return id3v2_add_latin1(gfp, frame_id, 0, 0, text);
+        return id3v2_add_latin1_lng(gfp, frame_id, 0, text);
     }
     if (frame_id == ID_USER) {
-        return id3v2_add_latin1(gfp, frame_id, "XXX", text, 0);
+        return id3v2_add_latin1_lng(gfp, frame_id, text, 0);
     }
     if (frame_id == ID_WFED) {
-        return id3v2_add_latin1(gfp, frame_id, 0, text, 0); /* iTunes expects WFED to be a text frame */
+        return id3v2_add_latin1_lng(gfp, frame_id, text, 0); /* iTunes expects WFED to be a text frame */
     }
     if (isFrameIdMatching(frame_id, FRAME_ID('T', 0, 0, 0))
       ||isFrameIdMatching(frame_id, FRAME_ID('W', 0, 0, 0))) {
-        return id3v2_add_latin1(gfp, frame_id, 0, 0, text);
+        return id3v2_add_latin1_lng(gfp, frame_id, 0, text);
     }
     return -255;        /* not supported by now */
 }
@@ -1095,7 +1121,7 @@ id3tag_set_comment(lame_t gfp, const char *comment)
         gfc->tag_spec.flags |= CHANGED_FLAG;
         {
             uint32_t const flags = gfc->tag_spec.flags;
-            id3v2_add_latin1(gfp, ID_COMMENT, "XXX", "", comment);
+            id3v2_add_latin1_lng(gfp, ID_COMMENT, "", comment);
             gfc->tag_spec.flags = flags;
         }
     }

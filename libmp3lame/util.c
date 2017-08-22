@@ -49,6 +49,7 @@
 void
 free_id3tag(lame_internal_flags * const gfc)
 {
+    gfc->tag_spec.language[0] = 0;
     if (gfc->tag_spec.title != 0) {
         free(gfc->tag_spec.title);
         gfc->tag_spec.title = 0;

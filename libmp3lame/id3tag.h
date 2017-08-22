@@ -47,6 +47,7 @@ typedef struct id3tag_spec {
     unsigned int albumart_size;
     unsigned int padding_size;
     int     albumart_mimetype;
+    char    language[4]; /* the language of the frame's content, according to ISO-639-2 */
     FrameDataNode *v2_head, *v2_tail;
 } id3tag_spec;
 

@@ -138,7 +138,8 @@ II_step_one(PMPSTR mp, sideinfo_layer_II *si, struct frame *fr)
     int     i, ch;
 
     memset(si, 0, sizeof(*si));
-
+    if (jsbound > sblimit)
+        jsbound = sblimit;
     if (nch == 2) {
         for (i = 0; i < jsbound; ++i) {
             short   step = alloc1->bits;
@@ -222,6 +223,8 @@ II_step_two(PMPSTR mp, sideinfo_layer_II* si, struct frame *fr, int gr, real fra
     int     i, ch, nch = fr->stereo;
     double  cm, r0, r1, r2;
 
+    if (jsbound > sblimit)
+        jsbound = sblimit;
     for (i = 0; i < jsbound; ++i) {
         short   step = alloc1->bits;
         for (ch = 0; ch < nch; ++ch) {

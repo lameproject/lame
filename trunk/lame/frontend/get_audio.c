@@ -1005,7 +1005,9 @@ open_snd_file(lame_t gfp, char const *inPath)
         if (gs_pSndFileIn == NULL) {
             if (global_raw_pcm.in_signed == 0 && global_raw_pcm.in_bitwidth != 8) {
                 error_printf("Unsigned input only supported with bitwidth 8\n");
+#if defined( _WIN32 ) && !defined(__MINGW32__)
                 free(file_name);
+#endif
                 return 0;
             }
             /* set some defaults incase input is raw PCM */

@@ -296,7 +296,7 @@ print_trailing_info(lame_global_flags * gf)
 
             /* advice the user on the scale factor */
             if (noclipScale > 0) {
-                console_printf("using  --scale %.2f\n", noclipScale);
+                console_printf("using  --scale %.2f\n", noclipScale * lame_get_scale(gf));
                 console_printf("         or less (the value under --scale is approximate).\n");
             }
             else {

@@ -604,7 +604,8 @@ decodeMP3_clipchoice(PMPSTR mp, unsigned char *in, int isize, char *out, int *do
             if (mp->fr.error_protection)
                 getbits(mp, 16);
 
-            decode_layer1_frame(mp, (unsigned char *) out, done);
+            if (decode_layer1_frame(mp, (unsigned char *) out, done) < 0)
+                return MP3_ERR;
             break;
 
         case 2:

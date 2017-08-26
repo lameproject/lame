@@ -195,6 +195,11 @@ lame_set_out_samplerate(lame_global_flags * gfp, int out_samplerate)
          *
          * (not used by decoding routines)
          */
+        if (out_samplerate != 0) {
+            int     v=0;
+            if (SmpFrqIndex(out_samplerate, &v) < 0)
+                return -1;
+        }
         gfp->samplerate_out = out_samplerate;
         return 0;
     }

@@ -552,14 +552,22 @@ lame_init_params(lame_global_flags * gfp)
     if (gfc == 0) 
         return -1;
 
+    if (is_lame_internal_flags_valid(gfc))
+        return -1; /* already initialized */
+
     /* start updating lame internal flags */
     gfc->class_id = LAME_ID;
     gfc->lame_init_params_successful = 0; /* will be set to one, when we get through until the end */
 
     if (gfp->samplerate_in < 1)
         return -1; /* input sample rate makes no sense */
-    if (gfp->num_channels < 1)
+    if (gfp->num_channels < 1 || 2 < gfp->num_channels)
         return -1; /* number of input channels makes no sense */
+    if (gfp->samplerate_out != 0) {
+        int   v=0;
+        if (SmpFrqIndex(gfp->samplerate_out, &v) < 0)
+            return -1; /* output sample rate makes no sense */
+    }
 
     cfg = &gfc->cfg;
 
@@ -647,6 +655,7 @@ lame_init_params(lame_global_flags * gfp)
 
         /* we need the version for the bitrate table look up */
         cfg->samplerate_index = SmpFrqIndex(gfp->samplerate_out, &cfg->version);
+        assert(cfg->samplerate_index >=0);
 
         if (!cfg->free_format) /* for non Free Format find the nearest allowed bitrate */
             gfp->brate = FindNearestBitrate(gfp->brate, cfg->version, gfp->samplerate_out);
@@ -905,9 +914,7 @@ lame_init_params(lame_global_flags * gfp)
    * samplerate and bitrate index
    *******************************************************/
     cfg->samplerate_index = SmpFrqIndex(cfg->samplerate_out, &cfg->version);
-    if (cfg->samplerate_index < 0) {
-        return -1;
-    }
+    assert(cfg->samplerate_index >= 0);
 
     if (cfg->vbr == vbr_off) {
         if (cfg->free_format) {
@@ -917,7 +924,11 @@ lame_init_params(lame_global_flags * gfp)
             gfp->brate = FindNearestBitrate(gfp->brate, cfg->version, cfg->samplerate_out);
             gfc->ov_enc.bitrate_index = BitrateIndex(gfp->brate, cfg->version, cfg->samplerate_out);
             if (gfc->ov_enc.bitrate_index <= 0) {
-                return -1;
+                /* This never happens, because of preceding FindNearestBitrate!
+                 * But, set a sane value, just in case
+                 */
+                assert(0);
+                gfc->ov_enc.bitrate_index = 8;
             }
         }
     }
@@ -1073,16 +1084,26 @@ lame_init_params(lame_global_flags * gfp)
                 FindNearestBitrate(gfp->VBR_min_bitrate_kbps, cfg->version, cfg->samplerate_out);
             cfg->vbr_min_bitrate_index =
                 BitrateIndex(gfp->VBR_min_bitrate_kbps, cfg->version, cfg->samplerate_out);
-            if (cfg->vbr_min_bitrate_index < 0)
-                return -1;
+            if (cfg->vbr_min_bitrate_index < 0) {
+                /* This never happens, because of preceding FindNearestBitrate!
+                 * But, set a sane value, just in case
+                 */
+                assert(0);
+                cfg->vbr_min_bitrate_index = 1;
+            }
         }
         if (gfp->VBR_max_bitrate_kbps) {
             gfp->VBR_max_bitrate_kbps =
                 FindNearestBitrate(gfp->VBR_max_bitrate_kbps, cfg->version, cfg->samplerate_out);
             cfg->vbr_max_bitrate_index =
                 BitrateIndex(gfp->VBR_max_bitrate_kbps, cfg->version, cfg->samplerate_out);
-            if (cfg->vbr_max_bitrate_index < 0)
-                return -1;
+            if (cfg->vbr_max_bitrate_index < 0) {
+                /* This never happens, because of preceding FindNearestBitrate!
+                 * But, set a sane value, just in case
+                 */
+                assert(0);
+                cfg->vbr_max_bitrate_index = cfg->samplerate_out < 16000 ? 8 : 14;
+            }
         }
         gfp->VBR_min_bitrate_kbps = bitrate_table[cfg->version][cfg->vbr_min_bitrate_index];
         gfp->VBR_max_bitrate_kbps = bitrate_table[cfg->version][cfg->vbr_max_bitrate_index];
@@ -1263,7 +1284,11 @@ lame_init_params(lame_global_flags * gfp)
 
     if (cfg->findReplayGain) {
         if (InitGainAnalysis(gfc->sv_rpg.rgdata, cfg->samplerate_out) == INIT_GAIN_ANALYSIS_ERROR) {
-            return -6;
+            /* Actually this never happens, our samplerates are the ones RG accepts!
+             * But just in case, turn RG off
+             */
+            assert(0);
+            cfg->findReplayGain = 0;
         }
     }
 

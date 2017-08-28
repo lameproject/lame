@@ -118,7 +118,7 @@ struct gtkinfostruct {
 
 static lame_global_flags *gfp;
 lame_internal_flags *gfc;
-hip_t hip;
+hip_t hip; /* decoder handle of just encoded data */
 
 /**********************************************************************
  * read one frame and encode it
@@ -1013,6 +1013,10 @@ delete_event(GtkWidget * widget, GdkEvent * event, gpointer data)
     /* set MP3 done flag in case the File/Quit menu item has been selected */
     mp3done = 1;
 
+    if (hip) {
+        hip_decode_exit(hip);
+        hip = 0;
+    }
     gtk_main_quit();
 }
 
@@ -1635,6 +1639,7 @@ gtkcontrol(lame_global_flags * gfp2, char *inPath)
     idle_count = 0;     /* pause & plot when idle_count=idle_count_max */
 
     gtk_main();
+
     assert(mp3done);
     return (0);
 }

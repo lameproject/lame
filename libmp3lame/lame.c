@@ -2152,7 +2152,13 @@ lame_encode_flush(lame_global_flags * gfp, unsigned char *mp3buffer, int mp3buff
 
         mp3buffer += imp3;
         mp3count += imp3;
-        frames_left -= ((frame_num != gfc->ov_enc.frame_number) ? 1 : 0);
+        {   /* even a single pcm sample can produce several frames!
+             * for example: 1 Hz input file resampled to 8 kHz mpeg2.5
+             */
+            int const new_frames = gfc->ov_enc.frame_number - frame_num;
+            if (new_frames > 0)
+                frames_left -=  new_frames;
+        }
     }
     /* Set esv->mf_samples_to_encode to 0, so we may detect
      * and break loops calling it more than once in a row.

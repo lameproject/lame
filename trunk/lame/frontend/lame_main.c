@@ -510,80 +510,6 @@ lame_encoder(lame_global_flags * gf, FILE * outf, int nogap, char *inPath, char 
 }
 
 
-static void
-parse_nogap_filenames(int nogapout, char const *inPath, char *outPath, char *outdir)
-{
-    char const *slasher;
-    size_t  n;
-
-    strncpy(outPath, outdir, PATH_MAX+1);
-    outPath[PATH_MAX] = '\0';
-    if (!nogapout) {
-        strncpy(outPath, inPath, PATH_MAX + 1 - 4);
-        outPath[PATH_MAX-4] = '\0';
-        n = strlen(outPath);
-        /* nuke old extension, if one  */
-        if (outPath[n - 3] == 'w'
-            && outPath[n - 2] == 'a' && outPath[n - 1] == 'v' && outPath[n - 4] == '.') {
-            outPath[n - 3] = 'm';
-            outPath[n - 2] = 'p';
-            outPath[n - 1] = '3';
-        }
-        else {
-            outPath[n + 0] = '.';
-            outPath[n + 1] = 'm';
-            outPath[n + 2] = 'p';
-            outPath[n + 3] = '3';
-            outPath[n + 4] = 0;
-        }
-    }
-    else {
-        slasher = inPath;
-        slasher += PATH_MAX + 1 - 4;
-
-        /* backseek to last dir delemiter */
-        while (*slasher != '/' && *slasher != '\\' && slasher != inPath && *slasher != ':') {
-            slasher--;
-        }
-
-        /* skip one foward if needed */
-        if (slasher != inPath
-            && (outPath[strlen(outPath) - 1] == '/'
-                || outPath[strlen(outPath) - 1] == '\\' || outPath[strlen(outPath) - 1] == ':'))
-            slasher++;
-        else if (slasher == inPath
-                 && (outPath[strlen(outPath) - 1] != '/'
-                     &&
-                     outPath[strlen(outPath) - 1] != '\\' && outPath[strlen(outPath) - 1] != ':'))
-            /* FIXME: replace strcat by safer strncat */
-#ifdef _WIN32
-            strncat(outPath, "\\", PATH_MAX + 1 - 4);
-#elif __OS2__
-            strncat(outPath, "\\", PATH_MAX + 1 - 4);
-#else
-            strncat(outPath, "/", PATH_MAX + 1 - 4);
-#endif
-
-        strncat(outPath, slasher, PATH_MAX + 1 - 4);
-        n = strlen(outPath);
-        /* nuke old extension  */
-        if (outPath[n - 3] == 'w'
-            && outPath[n - 2] == 'a' && outPath[n - 1] == 'v' && outPath[n - 4] == '.') {
-            outPath[n - 3] = 'm';
-            outPath[n - 2] = 'p';
-            outPath[n - 1] = '3';
-        }
-        else {
-            outPath[n + 0] = '.';
-            outPath[n + 1] = 'm';
-            outPath[n + 2] = 'p';
-            outPath[n + 3] = '3';
-            outPath[n + 4] = 0;
-        }
-    }
-}
-
-
 int
 lame_main(lame_t gf, int argc, char **argv)
 {
@@ -596,6 +522,8 @@ lame_main(lame_t gf, int argc, char **argv)
     int     max_nogap = MAX_NOGAP;
     char    nogap_inPath_[MAX_NOGAP][PATH_MAX + 1];
     char   *nogap_inPath[MAX_NOGAP];
+    char    nogap_outPath_[MAX_NOGAP][PATH_MAX + 1];
+    char   *nogap_outPath[MAX_NOGAP];
 
     int     ret;
     int     i;
@@ -613,6 +541,10 @@ lame_main(lame_t gf, int argc, char **argv)
     memset(nogap_inPath_, 0, sizeof(nogap_inPath_));
     for (i = 0; i < MAX_NOGAP; ++i) {
         nogap_inPath[i] = &nogap_inPath_[i][0];
+    }
+    memset(nogap_outPath_, 0, sizeof(nogap_outPath_));
+    for (i = 0; i < MAX_NOGAP; ++i) {
+        nogap_outPath[i] = &nogap_outPath_[i][0];
     }
 
     /* parse the command line arguments, setting various flags in the
@@ -637,10 +569,16 @@ lame_main(lame_t gf, int argc, char **argv)
     /* initialize input file.  This also sets samplerate and as much
        other data on the input file as available in the headers */
     if (max_nogap > 0) {
-        /* for nogap encoding of multiple input files, it is not possible to
-         * specify the output file name, only an optional output directory. */
-        parse_nogap_filenames(nogapout, nogap_inPath[0], outPath, nogapdir);
-        outf = init_files(gf, nogap_inPath[0], outPath);
+          /* for nogap encoding of multiple input files, it is not possible to
+           * specify the output file name, only an optional output directory. */
+          for (i = 0; i < max_nogap; ++i) {
+              char const* outdir = nogapout ? nogapdir : "";
+              if (generateOutPath(nogap_inPath[i], outdir, ".mp3", nogap_outPath[i]) != 0) {
+                  error_printf("processing nogap file %d: %s\n", i+1, nogap_inPath[i]);
+                  return -1;
+              }
+          }
+          outf = init_files(gf, nogap_inPath[0], nogap_outPath[0]);
     }
     else {
         outf = init_files(gf, inPath, outPath);
@@ -686,19 +624,20 @@ lame_main(lame_t gf, int argc, char **argv)
         for (i = 0; i < max_nogap; ++i) {
             int     use_flush_nogap = (i != (max_nogap - 1));
             if (i > 0) {
-                parse_nogap_filenames(nogapout, nogap_inPath[i], outPath, nogapdir);
                 /* note: if init_files changes anything, like
                    samplerate, num_channels, etc, we are screwed */
-                outf = init_files(gf, nogap_inPath[i], outPath);
-                if (outf == NULL)
+                outf = init_files(gf, nogap_inPath[i], nogap_outPath[i]);
+                if (outf == NULL) {
+                    close_infile();
                     return -1;
+                }
                 /* reinitialize bitstream for next encoding.  this is normally done
                  * by lame_init_params(), but we cannot call that routine twice */
                 lame_init_bitstream(gf);
             }
             lame_set_nogap_total(gf, max_nogap);
             lame_set_nogap_currentindex(gf, i);
-            ret = lame_encoder(gf, outf, use_flush_nogap, nogap_inPath[i], outPath);
+            ret = lame_encoder(gf, outf, use_flush_nogap, nogap_inPath[i], nogap_outPath[i]);
         }
     }
     return ret;

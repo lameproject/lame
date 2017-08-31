@@ -1715,7 +1715,10 @@ lame_encode_buffer_sample_t(lame_internal_flags * gfc,
         return 0;
 
     /* copy out any tags that may have been written into bitstream */
-    mp3out = copy_buffer(gfc, mp3buf, mp3buf_size, 0);
+    {   /* if user specifed buffer size = 0, dont check size */
+        int const buf_size = mp3buf_size == 0 ? INT_MAX : mp3buf_size;
+        mp3out = copy_buffer(gfc, mp3buf, buf_size, 0);
+    }
     if (mp3out < 0)
         return mp3out;  /* not enough buffer space */
     mp3buf += mp3out;
@@ -1780,7 +1783,7 @@ lame_encode_buffer_sample_t(lame_internal_flags * gfc,
 
             int     buf_size = mp3buf_size - mp3size;
             if (mp3buf_size == 0)
-                buf_size = 0;
+                buf_size = INT_MAX;
 
             ret = lame_encode_mp3_frame(gfc, mfbuf[0], mfbuf[1], mp3buf, buf_size);
 
@@ -2031,6 +2034,9 @@ lame_encode_flush_nogap(lame_global_flags * gfp, unsigned char *mp3buffer, int m
         lame_internal_flags *const gfc = gfp->internal_flags;
         if (is_lame_internal_flags_valid(gfc)) {
             flush_bitstream(gfc);
+            /* if user specifed buffer size = 0, dont check size */
+            if (mp3buffer_size == 0)
+                mp3buffer_size = INT_MAX;
             rc = copy_buffer(gfc, mp3buffer, mp3buffer_size, 1);
             save_gain_values(gfc);
         }
@@ -2173,7 +2179,7 @@ lame_encode_flush(lame_global_flags * gfp, unsigned char *mp3buffer, int mp3buff
     mp3buffer_size_remaining = mp3buffer_size - mp3count;
     /* if user specifed buffer size = 0, dont check size */
     if (mp3buffer_size == 0)
-        mp3buffer_size_remaining = 0;
+        mp3buffer_size_remaining = INT_MAX;
 
     /* mp3 related stuff.  bit buffer might still contain some mp3 data */
     flush_bitstream(gfc);
@@ -2188,7 +2194,7 @@ lame_encode_flush(lame_global_flags * gfp, unsigned char *mp3buffer, int mp3buff
     mp3buffer_size_remaining = mp3buffer_size - mp3count;
     /* if user specifed buffer size = 0, dont check size */
     if (mp3buffer_size == 0)
-        mp3buffer_size_remaining = 0;
+        mp3buffer_size_remaining = INT_MAX;
 
     if (gfp->write_id3tag_automatic) {
         /* write a id3 tag to the bitstream */

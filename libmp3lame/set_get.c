@@ -2301,3 +2301,46 @@ lame_set_preset_notune(lame_global_flags * gfp, int preset_notune)
     (void) preset_notune;
     return 0;
 }
+
+static int
+calc_maximum_input_samples_for_buffer_size(lame_internal_flags const* gfc, size_t buffer_size)
+{
+    SessionConfig_t const *const cfg = &gfc->cfg;
+    int const pcm_samples_per_frame = 576 * cfg->mode_gr;
+    int     frames_per_buffer = 0, input_samples_per_buffer = 0;
+    int     kbps = 320;
+
+    if (cfg->samplerate_out < 16000)
+        kbps = 64;
+    else if (cfg->samplerate_out < 32000)
+        kbps = 160;
+    else
+        kbps = 320;
+    if (cfg->free_format)
+        kbps = cfg->avg_bitrate;
+    else if (cfg->vbr == vbr_off) {
+        kbps = cfg->avg_bitrate;
+    }
+    {
+        int const pad = 0;
+        int const bpf = ((cfg->version + 1) * 72000 * kbps / cfg->samplerate_out + pad);
+        frames_per_buffer = buffer_size / bpf;
+    }
+    {
+        double ratio = (double) cfg->samplerate_in / cfg->samplerate_out;
+        input_samples_per_buffer = pcm_samples_per_frame * frames_per_buffer * ratio;
+    }
+    return input_samples_per_buffer;
+}
+
+int
+lame_get_maximum_number_of_samples(lame_t gfp, size_t buffer_size)
+{
+    if (is_lame_global_flags_valid(gfp)) {
+        lame_internal_flags const *const gfc = gfp->internal_flags;
+        if (is_lame_internal_flags_valid(gfc)) {
+            return calc_maximum_input_samples_for_buffer_size(gfc, buffer_size);
+        }
+    }
+    return LAME_GENERICERROR;
+}

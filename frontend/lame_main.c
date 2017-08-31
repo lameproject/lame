@@ -390,7 +390,7 @@ lame_encoder_loop(lame_global_flags * gf, FILE * outf, int nogap, char *inPath, 
 {
     unsigned char mp3buffer[LAME_MAXMP3BUFFER];
     int     Buffer[2][1152];
-    int     iread, imp3, owrite;
+    int     iread, imp3, owrite, in_limit=0;
     size_t  id3v2_size;
 
     encoder_progress_begin(gf, inPath, outPath);
@@ -425,31 +425,48 @@ lame_encoder_loop(lame_global_flags * gf, FILE * outf, int nogap, char *inPath, 
         fflush(outf);
     }
 
+    /* do not feed more than in_limit PCM samples in one encode call
+       otherwise the mp3buffer is likely too small
+     */
+    in_limit = lame_get_maximum_number_of_samples(gf, sizeof(mp3buffer));
+    if (in_limit < 1)
+        in_limit = 1;
+
     /* encode until we hit eof */
     do {
         /* read in 'iread' samples */
         iread = get_audio(gf, Buffer);
 
         if (iread >= 0) {
-            encoder_progress(gf);
+            const int* buffer_l = Buffer[0];
+            const int* buffer_r = Buffer[1];
+            int     rest = iread;
+            do {
+                int const chunk = rest < in_limit ? rest : in_limit;
+                encoder_progress(gf);
 
-            /* encode */
-            imp3 = lame_encode_buffer_int(gf, Buffer[0], Buffer[1], iread,
-                                          mp3buffer, sizeof(mp3buffer));
+                /* encode */
 
-            /* was our output buffer big enough? */
-            if (imp3 < 0) {
-                if (imp3 == -1)
-                    error_printf("mp3 buffer is not big enough... \n");
-                else
-                    error_printf("mp3 internal error:  error code=%i\n", imp3);
-                return 1;
-            }
-            owrite = (int) fwrite(mp3buffer, 1, imp3, outf);
-            if (owrite != imp3) {
-                error_printf("Error writing mp3 output \n");
-                return 1;
-            }
+                imp3 = lame_encode_buffer_int(gf, buffer_l, buffer_r, chunk,
+                                              mp3buffer, sizeof(mp3buffer));
+                buffer_l += chunk;
+                buffer_r += chunk;
+                rest -= chunk;
+
+                /* was our output buffer big enough? */
+                if (imp3 < 0) {
+                    if (imp3 == -1)
+                        error_printf("mp3 buffer is not big enough... \n");
+                    else
+                        error_printf("mp3 internal error:  error code=%i\n", imp3);
+                    return 1;
+                }
+                owrite = (int) fwrite(mp3buffer, 1, imp3, outf);
+                if (owrite != imp3) {
+                    error_printf("Error writing mp3 output \n");
+                    return 1;
+                }
+            } while (rest > 0);
         }
         if (global_writer.flush_write == 1) {
             fflush(outf);

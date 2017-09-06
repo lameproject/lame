@@ -245,9 +245,12 @@ psycho_loudness_approx(FLOAT const *energy, FLOAT const *eql_w)
 #define I2LIMIT 23      /* as in if(i>24) -> changed 23 */
 #define MLIMIT  15      /* as in if(m<15) */
 
-static FLOAT ma_max_i1;
-static FLOAT ma_max_i2;
-static FLOAT ma_max_m;
+/* pow(10, (I1LIMIT + 1) / 16.0); */
+static const FLOAT ma_max_i1 = 3.6517412725483771;
+/* pow(10, (I2LIMIT + 1) / 16.0); */
+static const FLOAT ma_max_i2 = 31.622776601683793;
+/* pow(10, (MLIMIT) / 10.0); */
+static const FLOAT ma_max_m  = 31.622776601683793;
 
     /*This is the masking table:
        According to tonality, values are going from 0dB (TMN)
@@ -282,9 +285,14 @@ mask_add_delta(int i)
 static void
 init_mask_add_max_values(void)
 {
-    ma_max_i1 = pow(10, (I1LIMIT + 1) / 16.0);
-    ma_max_i2 = pow(10, (I2LIMIT + 1) / 16.0);
-    ma_max_m = pow(10, (MLIMIT) / 10.0);
+#ifndef NDEBUG
+    FLOAT const _ma_max_i1 = pow(10, (I1LIMIT + 1) / 16.0);
+    FLOAT const _ma_max_i2 = pow(10, (I2LIMIT + 1) / 16.0);
+    FLOAT const _ma_max_m = pow(10, (MLIMIT) / 10.0);
+    assert(fabs(ma_max_i1 - _ma_max_i1) <= FLT_EPSILON);
+    assert(fabs(ma_max_i2 - _ma_max_i2) <= FLT_EPSILON);
+    assert(fabs(ma_max_m  - _ma_max_m ) <= FLT_EPSILON);
+#endif
 }
 
 

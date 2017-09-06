@@ -51,7 +51,6 @@
 #define TRI_SIZE (5-1)  /* 1024 =  4**5 */
 
 /* fft.c    */
-static FLOAT window[BLKSIZE], window_s[BLKSIZE_s / 2];
 
 static const FLOAT costab[TRI_SIZE * 2] = {
     9.238795325112867e-01, 3.826834323650898e-01,
@@ -189,7 +188,6 @@ static const unsigned char rv_tbl[] = {
 #define ms21(f) (window_s[i + 0x41] * f(i + k + 0x41))
 #define ms31(f) (window_s[0x3e - i] * f(i + k + 0xc1))
 
-
 void
 fft_short(lame_internal_flags const *const gfc,
           FLOAT x_real[3][BLKSIZE_s], int chn, const sample_t *const buffer[2])
@@ -197,6 +195,9 @@ fft_short(lame_internal_flags const *const gfc,
     int     i;
     int     j;
     int     b;
+
+#define window_s gfc->cd_psy->window_s
+#define window gfc->cd_psy->window
 
     for (b = 0; b < 3; b++) {
         FLOAT  *x = &x_real[b][BLKSIZE_s / 2];
@@ -237,6 +238,9 @@ fft_short(lame_internal_flags const *const gfc,
             x[BLKSIZE_s / 2 + 3] = f1 - f3;
         } while (--j >= 0);
 
+#undef window
+#undef window_s
+
         gfc->fft_fht(x, BLKSIZE_s / 2);
         /* BLKSIZE_s/2 because of 3DNow! ASM routine */
     }
@@ -249,6 +253,9 @@ fft_long(lame_internal_flags const *const gfc,
     int     i;
     int     jj = BLKSIZE / 8 - 1;
     x += BLKSIZE / 2;
+
+#define window_s gfc->cd_psy->window_s
+#define window gfc->cd_psy->window
 
     do {
         FLOAT   f0, f1, f2, f3, w;
@@ -284,6 +291,9 @@ fft_long(lame_internal_flags const *const gfc,
         x[BLKSIZE / 2 + 3] = f1 - f3;
     } while (--jj >= 0);
 
+#undef window
+#undef window_s
+
     gfc->fft_fht(x, BLKSIZE / 2);
     /* BLKSIZE/2 because of 3DNow! ASM routine */
 }
@@ -302,11 +312,11 @@ init_fft(lame_internal_flags * const gfc)
     /* in the interest of merging nspsytune stuff - switch to blackman window */
     for (i = 0; i < BLKSIZE; i++)
         /* blackman window */
-        window[i] = 0.42 - 0.5 * cos(2 * PI * (i + .5) / BLKSIZE) +
+        gfc->cd_psy->window[i] = 0.42 - 0.5 * cos(2 * PI * (i + .5) / BLKSIZE) +
             0.08 * cos(4 * PI * (i + .5) / BLKSIZE);
 
     for (i = 0; i < BLKSIZE_s / 2; i++)
-        window_s[i] = 0.5 * (1.0 - cos(2.0 * PI * (i + 0.5) / BLKSIZE_s));
+        gfc->cd_psy->window_s[i] = 0.5 * (1.0 - cos(2.0 * PI * (i + 0.5) / BLKSIZE_s));
 
     gfc->fft_fht = fht;
 #ifdef HAVE_NASM

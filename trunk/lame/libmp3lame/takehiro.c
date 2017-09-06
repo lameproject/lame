@@ -596,7 +596,7 @@ static int count_bit_null(const int* ix, const int* end, int max, unsigned int* 
 
 typedef int (*count_fnc)(const int* ix, const int* end, int max, unsigned int* s);
   
-static count_fnc count_fncs[] = 
+static const count_fnc count_fncs[] = 
 { &count_bit_null
 , &count_bit_noESC
 , &count_bit_noESC_from2

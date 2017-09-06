@@ -34,6 +34,8 @@
 #include <dmalloc.h>
 #endif
 
+static int table_init_called = 0;
+
 real    decwin[512 + 32];
 static real cos64[16], cos32[8], cos16[4], cos8[2], cos4[1];
 real   *pnts[] = { cos64, cos32, cos16, cos8, cos4 };
@@ -115,6 +117,10 @@ make_decode_tables(long scaleval)
     int     i, j, k, kr, divv;
     real   *table, *costab;
 
+    if (table_init_called)
+        return;
+
+    table_init_called = 1;
 
     for (i = 0; i < 5; i++) {
         kr = 0x10 >> i;

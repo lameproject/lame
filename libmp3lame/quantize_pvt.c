@@ -167,6 +167,7 @@ const scalefac_struct sfBandIndex[9] = {
 };
 
 
+/* FIXME: move global variables in some struct */
 
 FLOAT   pow20[Q_MAX + Q_MAX2 + 1];
 FLOAT   ipow20[Q_MAX];

@@ -340,8 +340,8 @@ AnalyzeSamples(replaygain_t * rgData, const Float_t * left_samples, const Float_
         sum_r = 0;
         i = cursamples & 0x03;
         while (i--) {
-	    double const l = *curleft++;
-	    double const r = *curright++;
+            double const l = *curleft++;
+            double const r = *curright++;
             sum_l += l * l;
             sum_r += r * r;
         }

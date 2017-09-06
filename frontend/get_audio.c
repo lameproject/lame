@@ -1849,10 +1849,11 @@ open_wave_file(lame_t gfp, char const *inPath, int *enc_delay, int *enc_padding)
     }
 
     if (lame_get_num_samples(gfp) == MAX_U_32_NUM && musicin != stdin) {
+        int const tmp_num_channels = lame_get_num_channels(gfp);
         double const flen = lame_get_file_size(musicin); /* try to figure out num_samples */
-        if (flen >= 0) {
+        if (flen >= 0 && tmp_num_channels > 0 ) {
             /* try file size, assume 2 bytes per sample */
-            unsigned long fsize = (unsigned long) (flen / (2 * lame_get_num_channels(gfp)));
+            unsigned long fsize = (unsigned long) (flen / (2 * tmp_num_channels));
             (void) lame_set_num_samples(gfp, fsize);
             global. count_samples_carefully = 0;
         }

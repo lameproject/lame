@@ -166,16 +166,22 @@ freegfc(lame_internal_flags * const gfc)
 }
 
 void
-malloc_aligned(aligned_pointer_t * ptr, unsigned int size, unsigned int bytes)
+calloc_aligned(aligned_pointer_t * ptr, unsigned int size, unsigned int bytes)
 {
     if (ptr) {
         if (!ptr->pointer) {
             ptr->pointer = malloc(size + bytes);
-            if (bytes > 0) {
-                ptr->aligned = (void *) ((((size_t) ptr->pointer + bytes - 1) / bytes) * bytes);
+            if (ptr->pointer != 0) {
+                memset(ptr->pointer, 0, size + bytes);
+                if (bytes > 0) {
+                    ptr->aligned = (void *) ((((size_t) ptr->pointer + bytes - 1) / bytes) * bytes);
+                }
+                else {
+                    ptr->aligned = ptr->pointer;
+                }
             }
             else {
-                ptr->aligned = ptr->pointer;
+                ptr->aligned = 0;
             }
         }
     }

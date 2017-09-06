@@ -56,34 +56,35 @@ InitMP3(PMPSTR mp)
     hip_init_tables_layer2();
     hip_init_tables_layer3();
 
-    memset(mp, 0, sizeof(MPSTR));
+    if (mp) {
+        memset(mp, 0, sizeof(MPSTR));
 
-    mp->framesize = 0;
-    mp->num_frames = 0;
-    mp->enc_delay = -1;
-    mp->enc_padding = -1;
-    mp->vbr_header = 0;
-    mp->header_parsed = 0;
-    mp->side_parsed = 0;
-    mp->data_parsed = 0;
-    mp->free_format = 0;
-    mp->old_free_format = 0;
-    mp->ssize = 0;
-    mp->dsize = 0;
-    mp->fsizeold = -1;
-    mp->bsize = 0;
-    mp->head = mp->tail = NULL;
-    mp->fr.single = -1;
-    mp->bsnum = 0;
-    mp->wordpointer = mp->bsspace[mp->bsnum] + 512;
-    mp->bitindex = 0;
-    mp->synth_bo = 1;
-    mp->sync_bitstream = 1;
+        mp->framesize = 0;
+        mp->num_frames = 0;
+        mp->enc_delay = -1;
+        mp->enc_padding = -1;
+        mp->vbr_header = 0;
+        mp->header_parsed = 0;
+        mp->side_parsed = 0;
+        mp->data_parsed = 0;
+        mp->free_format = 0;
+        mp->old_free_format = 0;
+        mp->ssize = 0;
+        mp->dsize = 0;
+        mp->fsizeold = -1;
+        mp->bsize = 0;
+        mp->head = mp->tail = NULL;
+        mp->fr.single = -1;
+        mp->bsnum = 0;
+        mp->wordpointer = mp->bsspace[mp->bsnum] + 512;
+        mp->bitindex = 0;
+        mp->synth_bo = 1;
+        mp->sync_bitstream = 1;
 
-    mp->report_dbg = &lame_report_def;
-    mp->report_err = &lame_report_def;
-    mp->report_msg = &lame_report_def;
-
+        mp->report_dbg = &lame_report_def;
+        mp->report_err = &lame_report_def;
+        mp->report_msg = &lame_report_def;
+    }
     make_decode_tables(32767);
 
     return 1;
@@ -92,14 +93,16 @@ InitMP3(PMPSTR mp)
 void
 ExitMP3(PMPSTR mp)
 {
-    struct buf *b, *bn;
+    if (mp) {
+        struct buf *b, *bn;
 
-    b = mp->tail;
-    while (b) {
-        free(b->pnt);
-        bn = b->next;
-        free(b);
-        b = bn;
+        b = mp->tail;
+        while (b) {
+            free(b->pnt);
+            bn = b->next;
+            free(b);
+            b = bn;
+        }
     }
 }
 

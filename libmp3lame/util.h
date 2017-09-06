@@ -127,7 +127,7 @@ extern  "C" {
         void   *pointer;     /* to use with malloc/free */
     } aligned_pointer_t;
 
-    void    malloc_aligned(aligned_pointer_t * ptr, unsigned int size, unsigned int bytes);
+    void    calloc_aligned(aligned_pointer_t * ptr, unsigned int size, unsigned int bytes);
     void    free_aligned(aligned_pointer_t * ptr);
 
 
@@ -207,6 +207,7 @@ extern  "C" {
      *  global data constants
      */
     typedef struct {
+        FLOAT window[BLKSIZE], window_s[BLKSIZE_s / 2];
         PsyConst_CB2SB_t l;
         PsyConst_CB2SB_t s;
         PsyConst_CB2SB_t l_to_s;

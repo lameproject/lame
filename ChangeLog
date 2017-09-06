@@ -11,6 +11,149 @@
 
 -- 
 
+2017-09-06 19:38  aleidinger
+
+	* libmp3lame/psymodel.c:
+
+	Add missing (at least in FreeBSD) include for FLT_EPSILON.
+
+2017-09-06 15:07  robert
+
+	* frontend/get_audio.c, libmp3lame/fft.c,
+	  libmp3lame/gain_analysis.c, libmp3lame/psymodel.c,
+	  libmp3lame/quantize_pvt.c, libmp3lame/set_get.c,
+	  libmp3lame/takehiro.c, libmp3lame/util.c, libmp3lame/util.h,
+	  mpglib/interface.c, mpglib/tabinit.c:
+
+	small fixes
+
+2017-08-31 14:14  robert
+
+	* frontend/lame_main.c, include/lame.def, include/lame.h,
+	  include/libmp3lame.sym, libmp3lame/bitstream.c,
+	  libmp3lame/lame.c, libmp3lame/set_get.c:
+
+	another go to fix bug #474: Buffer Overflow possible when input sample rate very low
+
+	- do_copy_buffer did not check buffer size, when size was zero!
+	  0 was a bad choice for the purpose of not checking, because
+	  it was possible to get there, even when checking was demeanded!
+
+2017-08-30 20:48  robert
+
+	* libmp3lame/lame.c:
+
+	fix for bug #474: Buffer Overflow possible when input sample rate very low
+
+	When the input sample rate is very low, like 1 Hz, resampling to 8 kHz can result in a buffer overflow.
+	Found by Gustavo Grieco.
+
+2017-08-30 14:11  robert
+
+	* frontend/: lame_main.c, parse.c, parse.h:
+
+	fix for bug #473: Buffer Overflow possible in lame_main.c
+	- replaced parse_nogap_filename by generateOutPath
+	  (now there is only one function building the output file names)
+	- all nogap file names are now build before any encoding starts
+	- decode and nogap are no valid combination of arguments anymore, wouldn't work as expected
+
+2017-08-28 15:39  robert
+
+	* libmp3lame/id3tag.c:
+
+	fix for bug #472: NULL Pointer Dereference in id3v2AddAudioDuration
+	- plus some more pointer checks
+
+2017-08-28 12:48  robert
+
+	* frontend/gtkanal.c:
+
+	fixing resource leak, hip deocder wasn't closed on quit
+
+2017-08-26 13:20  robert
+
+	* libmp3lame/: lame.c, set_get.c:
+
+	lame_init_params:
+	- removed some impossible returns
+
+2017-08-26 10:54  robert
+
+	* libmp3lame/encoder.c:
+
+	more of psy downgrade
+
+2017-08-24 20:43  robert
+
+	* frontend/mp3rtp.c:
+
+	- free was called twice for some argument c-string
+
+2017-08-23 13:22  robert
+
+	* mpglib/: interface.c, layer1.c:
+
+	hip layer 1 decode: testing for illegal bit allocation value
+
+2017-08-22 23:31  robert
+
+	* mpglib/layer2.c:
+
+	fix for bug #470: global-buffer-overflow mpglib/layer2.c:144 II_step_one
+
+2017-08-22 19:44  robert
+
+	* libmp3lame/: id3tag.c, id3tag.h, util.c:
+
+	id3v2: set 'language'property to a valid language code (COMM field)
+
+2017-08-22 16:02  robert
+
+	* doc/html/history.html, frontend/get_audio.c,
+	  frontend/lame_main.c:
+
+	fixing bug i#434: --clipdetect scale suggestion unaware of --scale input value
+
+2017-08-21 17:10  robert
+
+	* frontend/get_audio.c:
+
+	fix for bug #469 Unable to build without mpglib
+
+2017-08-20 20:06  robert
+
+	* mpglib/layer3.c:
+
+	It looks like 'intensity stereo' decoding is broken. This change prevents a buffer overflow (read) and instead prints an indication, that there is something wrong.
+
+2017-08-20 13:56  robert
+
+	* mpglib/layer3.c:
+
+	fixing map for mixed-block band infos
+
+2017-08-19 20:17  robert
+
+	* mpglib/layer3.c:
+
+	fix for #467: stack-buffer-overflow mpglib/layer3.c:945 III_dequantize_sample
+
+	fix for #468 global-buffer-overflow mpglib/layer3.c:1244 III_i_stereo
+
+2017-08-19 14:20  robert
+
+	* mpglib/common.c:
+
+	fix for bug #465: global-buffer-overflow layer2.c:144 II_step_one
+	- mpeg-2.5 is only supported by Layer3
+
+2017-08-19 12:51  aleidinger
+
+	* ChangeLog:
+
+	update
+
 2017-08-18 22:06  robert
 
 	* mpglib/layer3.c:
@@ -77,311 +220,9 @@
 
 2017-08-15 14:51  aleidinger
 
-	* include/: lame.h, libmp3lame.sym:
+	* include/lame.h, include/libmp3lame.sym, libmp3lame/lame.c:
 
-	"patch #27: Add lame_encode_buffer_interleaved_int() by Michael Fink"
-
-2017-08-15 14:51  aleidinger
-
-	* libmp3lame/lame.c:
-
-	LIBRARY  libmp3lame.DLL
-	EXPORTS
-
-	lame_init		@1
-
-	lame_set_num_samples	@2
-	lame_get_num_samples	@3
-
-	lame_set_in_samplerate	@4
-	lame_get_in_samplerate	@5
-
-	lame_set_num_channels	@6
-	lame_get_num_channels	@7
-
-	lame_set_scale		@8
-	lame_get_scale		@9
-
-	lame_set_scale_left	@10
-	lame_get_scale_left	@11
-
-	lame_set_scale_right	@12
-	lame_get_scale_right	@13
-
-	lame_set_out_samplerate	@14
-	lame_get_out_samplerate	@15
-
-	lame_set_analysis	@16
-	lame_get_analysis	@17
-
-	lame_set_bWriteVbrTag	@18
-	lame_get_bWriteVbrTag	@19
-
-	lame_set_decode_only	@20
-	lame_get_decode_only	@21
-
-	lame_set_quality	@22
-	lame_get_quality	@23
-
-	lame_set_mode		@24
-	lame_get_mode		@25
-
-	lame_set_force_ms	@26
-	lame_get_force_ms	@27
-
-	lame_set_free_format	@28
-	lame_get_free_format	@29
-
-	lame_set_findReplayGain	@30
-	lame_get_findReplayGain	@31
-
-	lame_set_decode_on_the_fly	@32
-	lame_get_decode_on_the_fly	@33
-
-	lame_set_nogap_total	@34
-	lame_get_nogap_total	@35
-
-	lame_set_nogap_currentindex	@36
-	lame_get_nogap_currentindex	@37
-
-	lame_set_errorf		@38
-	lame_set_debugf		@39
-	lame_set_msgf		@40
-
-	lame_set_brate		@41
-	lame_get_brate		@42
-
-	lame_set_compression_ratio	@43
-	lame_get_compression_ratio	@44
-
-	lame_set_preset		@45
-
-	lame_set_asm_optimizations	@46
-
-	lame_set_copyright	@47
-	lame_get_copyright	@48
-
-	lame_set_original	@49
-	lame_get_original	@50
-
-	lame_set_error_protection	@51
-	lame_get_error_protection	@52
-
-	lame_set_padding_type	@53
-	lame_get_padding_type	@54
-
-	lame_set_extension	@55
-	lame_get_extension	@56
-
-	lame_set_strict_ISO	@57
-	lame_get_strict_ISO	@58
-
-	lame_set_disable_reservoir	@59
-	lame_get_disable_reservoir	@60
-
-	lame_set_quant_comp	@61
-	lame_get_quant_comp	@62
-	lame_set_quant_comp_short	@63
-	lame_get_quant_comp_short	@64
-
-	lame_set_experimentalX	@65
-	lame_get_experimentalX	@66
-
-	lame_set_experimentalY	@67
-	lame_get_experimentalY	@68
-
-	lame_set_experimentalZ	@69
-	lame_get_experimentalZ	@70
-
-	lame_set_exp_nspsytune	@71
-	lame_get_exp_nspsytune	@72
-
-	lame_set_msfix		@73
-	lame_get_msfix		@74
-
-	lame_set_VBR		@75
-	lame_get_VBR		@76
-
-	lame_set_VBR_q		@77
-	lame_get_VBR_q		@78
-
-	lame_set_VBR_mean_bitrate_kbps	@79
-	lame_get_VBR_mean_bitrate_kbps	@80
-
-	lame_set_VBR_min_bitrate_kbps	@81
-	lame_get_VBR_min_bitrate_kbps	@82
-
-	lame_set_VBR_max_bitrate_kbps	@83
-	lame_get_VBR_max_bitrate_kbps	@84
-
-	lame_set_VBR_hard_min	@85
-	lame_get_VBR_hard_min	@86
-
-	lame_set_preset_expopts	@87
-
-	lame_set_lowpassfreq	@88
-	lame_get_lowpassfreq	@89
-
-	lame_set_lowpasswidth	@90
-	lame_get_lowpasswidth	@91
-
-	lame_set_highpassfreq	@92
-	lame_get_highpassfreq	@93
-
-	lame_set_highpasswidth	@94
-	lame_get_highpasswidth	@95
-
-	lame_set_ATHonly	@96
-	lame_get_ATHonly	@97
-
-	lame_set_ATHshort	@98
-	lame_get_ATHshort	@99
-
-	lame_set_noATH		@100
-	lame_get_noATH		@101
-
-	lame_set_ATHtype	@102
-	lame_get_ATHtype	@103
-
-	lame_set_ATHlower	@104
-	lame_get_ATHlower	@105
-
-	lame_set_athaa_type	@106
-	lame_get_athaa_type	@107
-
-	lame_set_athaa_loudapprox	@108
-	lame_get_athaa_loudapprox	@109
-
-	lame_set_athaa_sensitivity	@110
-	lame_get_athaa_sensitivity	@111
-
-	lame_set_cwlimit	@112
-	lame_get_cwlimit	@113
-
-	lame_set_useTemporal	@114
-	lame_get_useTemporal	@115
-
-	lame_set_interChRatio	@116
-	lame_get_interChRatio	@117
-
-	lame_set_no_short_blocks	@118
-	lame_get_no_short_blocks	@119
-	lame_set_force_short_blocks	@120
-	lame_get_force_short_blocks	@121
-	lame_set_allow_diff_short	@122
-	lame_get_allow_diff_short	@123
-
-	lame_set_emphasis	@124
-	lame_get_emphasis	@125
-
-	lame_get_version	@126
-	lame_get_encoder_delay	@127
-	lame_get_encoder_padding	@128
-	lame_get_framesize	@129
-
-	lame_get_mf_samples_to_encode	@130
-	lame_get_size_mp3buffer	@131
-	lame_get_frameNum	@132
-	lame_get_totalframes	@133
-
-	lame_get_RadioGain	@134
-	lame_get_AudiophileGain	@135
-	lame_get_PeakSample	@136
-	lame_get_noclipGainChange	@137
-	lame_get_noclipScale	@138
-
-	lame_init_params	@139
-
-	get_lame_version	@140
-	get_lame_short_version @141
-	get_lame_very_short_version	@142
-	get_psy_version		@143
-	get_lame_url		@144
-
-	get_lame_version_numerical	@145
-
-	lame_print_config	@146
-	lame_print_internals	@147
-
-	lame_encode_buffer	@148
-	lame_encode_buffer_interleaved	@149
-	lame_encode_buffer_float	@150
-	lame_encode_buffer_long	@151
-	lame_encode_buffer_long2	@152
-	lame_encode_buffer_int	@153
-	lame_encode_flush	@154
-	lame_encode_flush_nogap	@155
-
-	lame_init_bitstream	@156
-
-	lame_bitrate_hist	@157
-	lame_bitrate_kbps	@158
-	lame_stereo_mode_hist	@159
-	lame_bitrate_stereo_mode_hist	@160
-	lame_block_type_hist	@161
-	lame_bitrate_block_type_hist	@162
-	lame_mp3_tags_fid	@163
-	lame_close		@164
-	lame_get_lametag_frame	@165
-	get_lame_os_bitness	@166
-	lame_set_VBR_quality	@167
-	lame_get_VBR_quality	@168
-
-	lame_encode_buffer_ieee_float	@169
-	lame_encode_buffer_interleaved_ieee_float	@170
-	lame_encode_buffer_ieee_double	@171
-	lame_encode_buffer_interleaved_ieee_double	@172
-	lame_encode_buffer_interleaved_int	@173
-
-	lame_get_bitrate	@502
-	lame_get_samplerate	@503
-
-	lame_decode_init	@1000
-	lame_decode		@1001
-	lame_decode_headers	@1002
-	lame_decode1		@1003
-	lame_decode1_headers	@1004
-	lame_decode1_headersB	@1005
-	lame_decode_exit	@1006
-
-	hip_decode_init	@1100
-	hip_decode_exit	@1101
-	hip_decode		@1102
-	hip_decode_headers	@1103
-	hip_decode1		@1104
-	hip_decode1_headers	@1105
-	hip_decode1_headersB	@1106
-	hip_set_debugf	@1107
-	hip_set_errorf	@1108
-	hip_set_msgf	@1109
-
-	id3tag_genre_list	@2000
-	id3tag_init   		@2001
-	id3tag_add_v2   	@2002
-	id3tag_v1_only  	@2003
-	id3tag_v2_only  	@2004
-	id3tag_space_v1 	@2005
-	id3tag_pad_v2   	@2006
-	id3tag_set_title	@2007
-	id3tag_set_artist	@2008
-	id3tag_set_album	@2009
-	id3tag_set_year		@2010
-	id3tag_set_comment	@2011
-	id3tag_set_track	@2012
-	id3tag_set_genre	@2013
-	id3tag_set_fieldvalue	@2014
-	id3tag_set_albumart	@2015
-	lame_get_id3v1_tag	@2016
-	lame_get_id3v2_tag	@2017
-	lame_set_write_id3tag_automatic	@2018
-	lame_get_write_id3tag_automatic	@2019
-	id3tag_set_pad	@2020
-	id3tag_set_comment_ucs2	@2021
-	id3tag_set_textinfo_ucs2 @2022
-	id3tag_set_fieldvalue_ucs2	@2023
-	id3tag_set_comment_utf16	@2024
-	id3tag_set_textinfo_utf16 @2025
-	id3tag_set_fieldvalue_utf16	@2026
+	patch #27: Add lame_encode_buffer_interleaved_int() by Michael Fink
 
 2017-08-15 14:46  aleidinger
 
@@ -3117,17 +2958,17 @@
 
 	Add missing files, remove deleted ones.
 
-2008-11-09 14:06  aleidinger
-
-	* vc_solution/Makefile.am:
-
-	Add missing automake Makefile.
-
 2008-11-09 14:06  robert
 
 	* vc_solution/Makefile.am (lame3_98):
 
 	file Makefile.am was added on branch lame3_98 on 2010-02-26 01:56:52 +0000
+
+2008-11-09 14:06  aleidinger
+
+	* vc_solution/Makefile.am:
+
+	Add missing automake Makefile.
 
 2008-11-09 14:05  aleidinger
 

@@ -2,7 +2,7 @@
  *      Command line parsing related functions
  *
  *      Copyright (c) 1999 Mark Taylor
- *                    2000-2012 Robert Hegemann
+ *                    2000-2017 Robert Hegemann
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -70,6 +70,8 @@ char   *strchr(), *strrchr();
 #ifdef HAVE_ICONV
 #include <iconv.h>
 #include <errno.h>
+#include <locale.h>
+#include <langinfo.h>
 #endif
 
 #if defined _ALLOW_INTERNAL_OPTIONS
@@ -151,9 +153,7 @@ currCharCodeSize(void)
     size_t n = 1;
     char dst[32];
     char* src = "A";
-    char* env_lang = getenv("LANG");
-    char* xxx_code = env_lang == NULL ? NULL : strrchr(env_lang, '.');
-    char* cur_code = xxx_code == NULL ? "" : xxx_code+1;
+    char* cur_code = nl_langinfo(CODESET);
     iconv_t xiconv = iconv_open(cur_code, "ISO_8859-1");
     if (xiconv != (iconv_t)-1) {
         for (n = 0; n < 32; ++n) {
@@ -181,9 +181,7 @@ char* fromLatin1( char* src )
         size_t const n = l*4;
         dst = calloc(n+4, 4);
         if (dst != 0) {
-            char* env_lang = getenv("LANG");
-            char* xxx_code = env_lang == NULL ? NULL : strrchr(env_lang, '.');
-            char* cur_code = xxx_code == NULL ? "" : xxx_code+1;
+            char* cur_code = nl_langinfo(CODESET);
             iconv_t xiconv = iconv_open(cur_code, "ISO_8859-1");
             if (xiconv != (iconv_t)-1) {
                 char* i_ptr = src;
@@ -207,9 +205,7 @@ char* fromUtf16( char* src )
         size_t const n = l*4;
         dst = calloc(n+4, 4);
         if (dst != 0) {
-            char* env_lang = getenv("LANG");
-            char* xxx_code = env_lang == NULL ? NULL : strrchr(env_lang, '.');
-            char* cur_code = xxx_code == NULL ? "" : xxx_code+1;
+            char* cur_code = nl_langinfo(CODESET);
             iconv_t xiconv = iconv_open(cur_code, "UTF-16LE");
             if (xiconv != (iconv_t)-1) {
                 char* i_ptr = (char*)src;
@@ -235,9 +231,7 @@ char* toLatin1( char* src )
         size_t const n = l*4;
         dst = calloc(n+4, 4);
         if (dst != 0) {
-            char* env_lang = getenv("LANG");
-            char* xxx_code = env_lang == NULL ? NULL : strrchr(env_lang, '.');
-            char* cur_code = xxx_code == NULL ? "" : xxx_code+1;
+            char* cur_code = nl_langinfo(CODESET);
             iconv_t xiconv = iconv_open("ISO_8859-1//TRANSLIT", cur_code);
             if (xiconv != (iconv_t)-1) {
                 char* i_ptr = (char*)src;
@@ -263,9 +257,7 @@ char* toUtf16( char* src )
         size_t const n = (l+1)*4;
         dst = calloc(n+4, 4);
         if (dst != 0) {
-            char* env_lang = getenv("LANG");
-            char* xxx_code = env_lang == NULL ? NULL : strrchr(env_lang, '.');
-            char* cur_code = xxx_code == NULL ? "" : xxx_code+1;
+            char* cur_code = nl_langinfo(CODESET);
             iconv_t xiconv = iconv_open("UTF-16LE//TRANSLIT", cur_code);
             dst[0] = 0xff;
             dst[1] = 0xfe;
@@ -1521,6 +1513,9 @@ parse_args_(lame_global_flags * gfp, int argc, char **argv,
     enum TextEncoding id3_tenc = TENC_LATIN1;
 #endif
 
+#ifdef HAVE_ICONV
+    setlocale(LC_CTYPE, "");
+#endif
     inPath[0] = '\0';
     outPath[0] = '\0';
     /* turn on display options. user settings may turn them off below */

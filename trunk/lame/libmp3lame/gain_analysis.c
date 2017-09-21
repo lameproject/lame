@@ -109,7 +109,7 @@
 
 
 /*lint -save -e736 loss of precision */
-static const Float_t ABYule[9][multiple_of(16, 2 * YULE_ORDER + 1)] = {
+static const Float_t ABYule[9][multiple_of(4, 2 * YULE_ORDER + 1)] = {
     /* 20                 18                 16                 14                 12                 10                 8                  6                  4                  2                 0                 19                 17                 15                 13                 11                 9                  7                  5                  3                  1              */
     { 0.00288463683916,  0.00012025322027,  0.00306428023191,  0.00594298065125, -0.02074045215285,  0.02161526843274, -0.01655260341619, -0.00009291677959, -0.00123395316851, -0.02160367184185, 0.03857599435200, 0.13919314567432, -0.86984376593551,  2.75465861874613, -5.87257861775999,  9.48293806319790,-12.28759895145294, 13.05504219327545,-11.34170355132042,  7.81501653005538, -3.84664617118067},
     {-0.00187763777362,  0.00674613682247, -0.00240879051584,  0.01624864962975, -0.02596338512915,  0.02245293253339, -0.00834990904936, -0.00851165645469, -0.00848709379851, -0.02911007808948, 0.05418656406430, 0.13149317958808, -0.75104302451432,  2.19611684890774, -4.39470996079559,  6.85401540936998, -8.81498681370155,  9.47693607801280, -8.54751527471874,  6.36317777566148, -3.47845948550071},
@@ -122,7 +122,7 @@ static const Float_t ABYule[9][multiple_of(16, 2 * YULE_ORDER + 1)] = {
     {-0.02217936801134,  0.04788665548180, -0.04060034127000, -0.11202315195388, -0.02459864859345,  0.14590772289388, -0.10214864179676,  0.04267842219415, -0.00275953611929, -0.42163034350696, 0.53648789255105, 0.04704409688120,  0.05477720428674, -0.18823009262115, -0.17556493366449,  0.15113130533216,  0.26408300200955, -0.04678328784242, -0.03424681017675, -0.43193942311114, -0.25049871956020}
 };
 
-static const Float_t ABButter[9][multiple_of(16, 2 * BUTTER_ORDER + 1)] = {
+static const Float_t ABButter[9][multiple_of(4, 2 * BUTTER_ORDER + 1)] = {
     /* 5                4                  3                  2                 1              */
     {0.98621192462708, 0.97261396931306, -1.97242384925416, -1.97223372919527, 0.98621192462708},
     {0.98500175787242, 0.97022847566350, -1.97000351574484, -1.96977855582618, 0.98500175787242},
@@ -147,28 +147,28 @@ static void
 filterYule(const Float_t * input, Float_t * output, size_t nSamples, const Float_t * const kernel)
 {
     while (nSamples--) {
-        double y0 =  input[-10] * kernel[ 0];
-        double y2 =  input[ -9] * kernel[ 1];
-        double y4 =  input[ -8] * kernel[ 2];
-        double y6 =  input[ -7] * kernel[ 3];
-        double s00 = y0 + y2 + y4 + y6;
-        double y8 =  input[ -6] * kernel[ 4];
-        double yA =  input[ -5] * kernel[ 5];
-        double yC =  input[ -4] * kernel[ 6];
-        double yE =  input[ -3] * kernel[ 7];
-        double s01 = y8 + yA + yC + yE;
-        double yG =  input[ -2] * kernel[ 8] + input[ -1] * kernel[ 9];
-        double yK =  input[  0] * kernel[10];
+        Float_t y0 =  input[-10] * kernel[ 0];
+        Float_t y2 =  input[ -9] * kernel[ 1];
+        Float_t y4 =  input[ -8] * kernel[ 2];
+        Float_t y6 =  input[ -7] * kernel[ 3];
+        Float_t s00 = y0 + y2 + y4 + y6;
+        Float_t y8 =  input[ -6] * kernel[ 4];
+        Float_t yA =  input[ -5] * kernel[ 5];
+        Float_t yC =  input[ -4] * kernel[ 6];
+        Float_t yE =  input[ -3] * kernel[ 7];
+        Float_t s01 = y8 + yA + yC + yE;
+        Float_t yG =  input[ -2] * kernel[ 8] + input[ -1] * kernel[ 9];
+        Float_t yK =  input[  0] * kernel[10];
 
-        double s1 = s00 + s01 + yG + yK;
+        Float_t s1 = s00 + s01 + yG + yK;
 
-        double x1 = output[-10] * kernel[11] + output[ -9] * kernel[12];
-        double x5 = output[ -8] * kernel[13] + output[ -7] * kernel[14];
-        double x9 = output[ -6] * kernel[15] + output[ -5] * kernel[16];
-        double xD = output[ -4] * kernel[17] + output[ -3] * kernel[18];
-        double xH = output[ -2] * kernel[19] + output[ -1] * kernel[20];
+        Float_t x1 = output[-10] * kernel[11] + output[ -9] * kernel[12];
+        Float_t x5 = output[ -8] * kernel[13] + output[ -7] * kernel[14];
+        Float_t x9 = output[ -6] * kernel[15] + output[ -5] * kernel[16];
+        Float_t xD = output[ -4] * kernel[17] + output[ -3] * kernel[18];
+        Float_t xH = output[ -2] * kernel[19] + output[ -1] * kernel[20];
 
-        double s2 = x1 + x5 + x9 + xD + xH;
+        Float_t s2 = x1 + x5 + x9 + xD + xH;
 
         output[0] = (Float_t)(s1 - s2);
 
@@ -181,8 +181,8 @@ static void
 filterButter(const Float_t * input, Float_t * output, size_t nSamples, const Float_t * const kernel)
 {
     while (nSamples--) {
-        double s1 =  input[-2] * kernel[0] +  input[-1] * kernel[2] +  input[ 0] * kernel[4];
-        double s2 = output[-2] * kernel[1] + output[-1] * kernel[3];
+        Float_t s1 =  input[-2] * kernel[0] +  input[-1] * kernel[2] +  input[ 0] * kernel[4];
+        Float_t s2 = output[-2] * kernel[1] + output[-1] * kernel[3];
         output[0] = (Float_t)(s1 - s2);
         ++output;
         ++input;
@@ -282,7 +282,7 @@ AnalyzeSamples(replaygain_t * rgData, const Float_t * left_samples, const Float_
     long    cursamples;
     long    cursamplepos;
     int     i;
-    double  sum_l, sum_r;
+    Float_t sum_l, sum_r;
 
     if (num_samples == 0)
         return GAIN_ANALYSIS_OK;
@@ -340,23 +340,23 @@ AnalyzeSamples(replaygain_t * rgData, const Float_t * left_samples, const Float_
         sum_r = 0;
         i = cursamples & 0x03;
         while (i--) {
-            double const l = *curleft++;
-            double const r = *curright++;
+            Float_t const l = *curleft++;
+            Float_t const r = *curright++;
             sum_l += l * l;
             sum_r += r * r;
         }
         i = cursamples / 4;
         while (i--) {
-            double l0 = curleft[0] * curleft[0];
-            double l1 = curleft[1] * curleft[1];
-            double l2 = curleft[2] * curleft[2];
-            double l3 = curleft[3] * curleft[3];
-            double sl = l0 + l1 + l2 + l3;
-            double r0 = curright[0] * curright[0];
-            double r1 = curright[1] * curright[1];
-            double r2 = curright[2] * curright[2];
-            double r3 = curright[3] * curright[3];
-            double sr = r0 + r1 + r2 + r3;
+            Float_t l0 = curleft[0] * curleft[0];
+            Float_t l1 = curleft[1] * curleft[1];
+            Float_t l2 = curleft[2] * curleft[2];
+            Float_t l3 = curleft[3] * curleft[3];
+            Float_t sl = l0 + l1 + l2 + l3;
+            Float_t r0 = curright[0] * curright[0];
+            Float_t r1 = curright[1] * curright[1];
+            Float_t r2 = curright[2] * curright[2];
+            Float_t r3 = curright[3] * curright[3];
+            Float_t sr = r0 + r1 + r2 + r3;
             sum_l += sl;
             curleft += 4;
             sum_r += sr;

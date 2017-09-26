@@ -1199,7 +1199,12 @@ lame_init_params(lame_global_flags * gfp)
     cfg->quant_comp_short = gfp->quant_comp_short;
 
     cfg->use_temporal_masking_effect = gfp->useTemporal;
-    cfg->use_safe_joint_stereo = gfp->exp_nspsytune & 2;
+    if (cfg->mode == JOINT_STEREO) {
+        cfg->use_safe_joint_stereo = gfp->exp_nspsytune & 2;
+    }
+    else {
+        cfg->use_safe_joint_stereo = 0;
+    }
     {
         cfg->adjust_bass_db = (gfp->exp_nspsytune >> 2) & 63;
         if (cfg->adjust_bass_db >= 32.f)

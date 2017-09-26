@@ -616,8 +616,8 @@ lame_init_params(lame_global_flags * gfp)
     if (cfg->channels_in == 1)
         gfp->mode = MONO;
     cfg->channels_out = (gfp->mode == MONO) ? 1 : 2;
-    if (gfp->mode == MONO)
-        gfp->force_ms = 0; /* don't allow forced mid/side stereo for mono output */
+    if (gfp->mode != JOINT_STEREO)
+        gfp->force_ms = 0; /* forced mid/side stereo for j-stereo only */
     cfg->force_ms = gfp->force_ms;
 
     if (cfg->vbr == vbr_off && gfp->VBR_mean_bitrate_kbps != 128 && gfp->brate == 0)

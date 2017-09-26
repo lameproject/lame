@@ -2244,7 +2244,8 @@ parse_args_(lame_global_flags * gfp, int argc, char **argv,
                             (void) lame_set_scale_left(gfp, 0);
                             (void) lame_set_scale_right(gfp, 2);
                             break;
-                        case 'a':
+                        case 'a': /* same as 'j' ??? */
+                            lame_set_force_ms(gfp, 0);
                             (void) lame_set_mode(gfp, JOINT_STEREO);
                             break;
                         default:

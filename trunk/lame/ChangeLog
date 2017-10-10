@@ -11,6 +11,48 @@
 
 -- 
 
+2017-09-26 12:25  robert
+
+	* frontend/parse.c:
+
+	forcing MS for j-stereo mode only
+
+2017-09-26 12:14  robert
+
+	* Dll/BladeMP3EncDLL.c, frontend/parse.c, libmp3lame/lame.c:
+
+	forcing MS for j-stereo mode only
+
+2017-09-26 10:31  robert
+
+	* libmp3lame/lame.c:
+
+	set 'use of safe joint' for joint-stereo only, (only effects a bit in vbr tag, sometimes)
+
+2017-09-21 11:00  robert
+
+	* libmp3lame/: gain_analysis.c, machine.h:
+
+	+ fix multiple_of macro
+
+2017-09-19 16:58  robert
+
+	* libmp3lame/version.h:
+
+	release candidate
+
+2017-09-19 16:57  robert
+
+	* frontend/parse.c:
+
+	patch for bug #484: Lame doesn't recognize user locale correctly
+
+2017-09-06 19:40  aleidinger
+
+	* ChangeLog:
+
+	update
+
 2017-09-06 19:38  aleidinger
 
 	* libmp3lame/psymodel.c:
@@ -2958,17 +3000,17 @@
 
 	Add missing files, remove deleted ones.
 
-2008-11-09 14:06  robert
-
-	* vc_solution/Makefile.am (lame3_98):
-
-	file Makefile.am was added on branch lame3_98 on 2010-02-26 01:56:52 +0000
-
 2008-11-09 14:06  aleidinger
 
 	* vc_solution/Makefile.am:
 
 	Add missing automake Makefile.
+
+2008-11-09 14:06  robert
+
+	* vc_solution/Makefile.am (lame3_98):
+
+	file Makefile.am was added on branch lame3_98 on 2010-02-26 01:56:52 +0000
 
 2008-11-09 14:05  aleidinger
 

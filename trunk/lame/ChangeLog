@@ -11,6 +11,31 @@
 
 -- 
 
+2017-10-13 20:22  aleidinger
+
+	* vc_solution/Makefile.in:
+
+	update
+
+2017-10-13 20:21  aleidinger
+
+	* vc_solution/Makefile.am:
+
+	list each file explicitely, make dist does not like globs.
+
+2017-10-13 20:16  aleidinger
+
+	* testcase.mp3:
+
+	Update testcase for 3.100 release.
+	Build on FreeBSD 64bit, clang 5.0.0, no advanced compiler flags/optimisations.
+
+2017-10-10 19:31  aleidinger
+
+	* ChangeLog:
+
+	update
+
 2017-09-26 12:25  robert
 
 	* frontend/parse.c:
@@ -3000,17 +3025,17 @@
 
 	Add missing files, remove deleted ones.
 
-2008-11-09 14:06  aleidinger
-
-	* vc_solution/Makefile.am:
-
-	Add missing automake Makefile.
-
 2008-11-09 14:06  robert
 
 	* vc_solution/Makefile.am (lame3_98):
 
 	file Makefile.am was added on branch lame3_98 on 2010-02-26 01:56:52 +0000
+
+2008-11-09 14:06  aleidinger
+
+	* vc_solution/Makefile.am:
+
+	Add missing automake Makefile.
 
 2008-11-09 14:05  aleidinger
 

@@ -891,10 +891,10 @@ testg: frontend/mp3x$(EXEEXT) $(top_srcdir)/../test/castanets.wav
 	frontend/mp3x$(EXEEXT) -h $(top_srcdir)/../test/castanets.wav
 
 update:
-	cd $(top_srcdir) && CVS_RSH=ssh cvs -z3 -q update -dAP || true
+	cd $(top_srcdir) && svn update || true
 
 diff:
-	cd $(top_srcdir) && CVS_RSH=ssh cvs -z3 diff -u || true
+	cd $(top_srcdir) && svn diff || true
 
 frontend/lame$(EXEEXT):
 	$(MAKE) $(MAKEFLAGS)

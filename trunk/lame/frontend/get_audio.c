@@ -470,7 +470,7 @@ fskip(FILE * fp, long offset, int whence)
     if (whence != SEEK_CUR || offset < 0) {
         if (global_ui_config.silent < 10) {
             error_printf
-                ("fskip problem: Mostly the return status of functions is not evaluate so it is more secure to polute <stderr>.\n");
+                ("fskip problem: Mostly the return status of functions is not evaluated, so it is more secure to pollute <stderr>.\n");
         }
         return -1;
     }

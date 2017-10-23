@@ -70,7 +70,7 @@ char   *strchr(), *strrchr();
 #ifdef HAVE_ICONV
 #include <iconv.h>
 #include <errno.h>
-#ifdef HAVE_LANGINFO
+#ifdef HAVE_LANGINFO_H
 #include <locale.h>
 #include <langinfo.h>
 #endif
@@ -151,7 +151,7 @@ strlenMultiByte(char const* str, size_t w)
 static char*
 currentCharacterEncoding()
 {
-#ifdef HAVE_LANGINFO
+#ifdef HAVE_LANGINFO_H
     char* cur_code = nl_langinfo(CODESET);
 #else
     char* env_lang = getenv("LANG");
@@ -1527,7 +1527,7 @@ parse_args_(lame_global_flags * gfp, int argc, char **argv,
     enum TextEncoding id3_tenc = TENC_LATIN1;
 #endif
 
-#ifdef HAVE_ICONV
+#ifdef HAVE_LANGINFO_H
     setlocale(LC_CTYPE, "");
 #endif
     inPath[0] = '\0';

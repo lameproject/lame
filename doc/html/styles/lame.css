@@ -101,13 +101,16 @@ table {
   border: 1px #ABD74C solid;
   margin-bottom: 5px;
 }
+
 table th {
   background-color: #DFFF9C;
   border-bottom: 1px  #ABD74C solid;
 }
+
 table td {
   border-bottom: 1px  #ABD74C solid;
 }
+
 table.devlist th {
   font-size: 18px;
 }
@@ -128,17 +131,11 @@ h3#latest_release {
   background: #CFF57C;
   border: 2px solid #ABD74C;
 }
+
 .settingtitle {
   border-bottom: 1px solid #ABD74C;
 }
+
 img {
   border: 0px;
-}
-
-a {
-  border-bottom: 2px solid #ABD74C;
-  text-decoration: none;
-}
-a:hover {
-  background: #CFF57C;
 }

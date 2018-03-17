@@ -1,4 +1,4 @@
-
+﻿
 ;	Copyright (C) 1999 URURI
 
 ;	nasm�ѥޥ���
@@ -18,7 +18,9 @@
 
 BITS 32
 
+%ifnidn __OUTPUT_FORMAT__,aout
 section .note.GNU-stack noalloc noexec nowrite progbits
+%endif
 
 %ifdef YASM
 	%define segment_code segment .text align=16 use32

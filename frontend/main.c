@@ -55,6 +55,7 @@ char   *strchr(), *strrchr();
 #endif
 
 #ifdef __OS2__
+#define INCL_DOS
 #include <os2.h>
 #define PRTYC_IDLE 1
 #define PRTYC_REGULAR 2
@@ -64,6 +65,10 @@ char   *strchr(), *strrchr();
 
 #if defined(_WIN32)
 # include <windows.h>
+#endif
+
+#ifdef __EMX__
+# include <float.h>
 #endif
 
 
@@ -201,7 +206,7 @@ setProcessPriority(int Priority)
 
 #if defined(__OS2__)
 /* OS/2 priority functions */
-static void
+void
 setProcessPriority(int Priority)
 {
     int     rc;
@@ -475,6 +480,9 @@ c_main(int argc, char *argv[])
 #ifdef __EMX__
     /* This gives wildcard expansion on Non-POSIX shells with OS/2 */
     _wildcard(&argc, &argv);
+
+    /* This prevents SIGFPE */
+    _control87(MCW_EM, MCW_EM);
 #endif
 #if defined( _WIN32 ) && !defined(__MINGW32__)
     set_process_affinity();

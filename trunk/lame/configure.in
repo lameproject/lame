@@ -765,6 +765,9 @@ case $host_os in
 	*darwin*)
 		NASM_FORMAT="-f macho"
 		;;
+	*os2-emx*)
+		NASM_FORMAT="-f aout -DAOUT"
+		;;
 	*)
 		CYGWIN=no
 		NASM_FORMAT="-f elf"

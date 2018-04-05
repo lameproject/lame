@@ -107,7 +107,7 @@ public:
 
     HRESULT CheckInputType(const CMediaType* mtIn);
     HRESULT CheckTransform(const CMediaType* mtIn, const CMediaType* mtOut);
-    HRESULT DecideBufferSize(IMemAllocator * pAllocator, ALLOCATOR_PROPERTIES *pprop);
+    HRESULT DecideBufferSize(IMemAllocator * pAllocator, ALLOCATOR_PROPERTIES *pProperties);
 
     HRESULT GetMediaType  (int iPosition, CMediaType *pMediaType);
     HRESULT SetMediaType  (PIN_DIRECTION direction,const CMediaType *pmt);
@@ -123,7 +123,7 @@ public:
 
     // ISpecifyPropertyPages
     STDMETHODIMP NonDelegatingQueryInterface(REFIID riid, void ** ppv);
-    STDMETHODIMP GetPages(CAUUID *pPages);
+    STDMETHODIMP GetPages(CAUUID *pcauuid);
 
     // IAudioEncoderProperties
     STDMETHODIMP get_PESOutputEnabled(DWORD *dwEnabled);    // PES header. Obsolete
@@ -204,7 +204,7 @@ private:
 
     HRESULT FlushEncodedSamples();
 
-    void ReadPresetSettings(MPEG_ENCODER_CONFIG *pmabsi);
+    void ReadPresetSettings(MPEG_ENCODER_CONFIG *pmec);
 
     void LoadOutputCapabilities(DWORD sample_rate);
 

@@ -141,11 +141,11 @@ set_process_affinity()
  */
 
 void
-dosToLongFileName(char *fn)
+dosToLongFileName(char *filename)
 {
     const size_t MSIZE = PATH_MAX + 1 - 4; /*  we wanna add ".mp3" later */
     WIN32_FIND_DATAA lpFindFileData;
-    HANDLE  h = FindFirstFileA(fn, &lpFindFileData);
+    HANDLE  h = FindFirstFileA(filename, &lpFindFileData);
     if (h != INVALID_HANDLE_VALUE) {
         size_t  a;
         char   *q, *p;
@@ -156,16 +156,16 @@ dosToLongFileName(char *fn)
         }
         if (a >= MSIZE || a == 0)
             return;
-        q = strrchr(fn, '\\');
-        p = strrchr(fn, '/');
+        q = strrchr(filename, '\\');
+        p = strrchr(filename, '/');
         if (p - q > 0)
             q = p;
         if (q == NULL)
-            q = strrchr(fn, ':');
+            q = strrchr(filename, ':');
         if (q == NULL)
-            strncpy(fn, lpFindFileData.cFileName, a);
+            strncpy(filename, lpFindFileData.cFileName, a);
         else {
-            a += q - fn + 1;
+            a += q - filename + 1;
             if (a >= MSIZE)
                 return;
             strncpy(++q, lpFindFileData.cFileName, MSIZE - a);
@@ -181,9 +181,9 @@ SetPriorityClassMacro(DWORD p)
 }
 
 void
-setProcessPriority(int Priority)
+setProcessPriority(int priority)
 {
-    switch (Priority) {
+    switch (priority) {
     case 0:
     case 1:
         SetPriorityClassMacro(IDLE_PRIORITY_CLASS);
@@ -207,11 +207,11 @@ setProcessPriority(int Priority)
 #if defined(__OS2__)
 /* OS/2 priority functions */
 void
-setProcessPriority(int Priority)
+setProcessPriority(int priority)
 {
     int     rc;
 
-    switch (Priority) {
+    switch (priority) {
 
     case 0:
         rc = DosSetPriority(0, /* Scope: only one process */

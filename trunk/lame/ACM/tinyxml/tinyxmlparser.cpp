@@ -699,16 +699,12 @@ const char* TiXmlUnknown::Parse( const char* p )
 	++p;
 	value = "";
 
-	while ( p && *p && *p != '>' )
+	while ( *p && *p != '>' )
 	{
 		value += *p;
 		++p;
 	}
 
-	if ( !p )
-	{
-		if ( document )	document->SetError( TIXML_ERROR_PARSING_UNKNOWN );
-	}
 	if ( *p == '>' )
 		return p+1;
 	return p;

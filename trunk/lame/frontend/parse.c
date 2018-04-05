@@ -170,9 +170,9 @@ strlenMultiByte(char const* str, size_t w)
 {    
     size_t n = 0;
     if (str != 0) {
-        size_t i, x = 0;
+        size_t i;
         for (n = 0; ; ++n) {
-            x = 0;
+            size_t x = 0;
             for (i = 0; i < w; ++i) {
                 x += *str++ == 0 ? 1 : 0;
             }
@@ -1461,7 +1461,6 @@ set_id3_albumart(lame_t gfp, char const* file_name)
 {
     int ret = -1;
     FILE *fpi = 0;
-    char *albumart = 0;
 
     if (file_name == 0) {
         return 0;
@@ -1472,6 +1471,7 @@ set_id3_albumart(lame_t gfp, char const* file_name)
     }
     else {
         size_t size;
+        char *albumart = 0;
 
         fseek(fpi, 0, SEEK_END);
         size = ftell(fpi);
@@ -1579,18 +1579,14 @@ parse_args_(lame_global_flags * gfp, int argc, char **argv,
 
     /* process args */
     for (i = 0; ++i < argc;) {
-        char    c;
         char   *token;
-        char   *arg;
-        char   *nextArg;
         int     argUsed;
         int     argIgnored=0;
 
         token = argv[i];
         if (*token++ == '-') {
+            char   *nextArg = i + 1 < argc ? argv[i + 1] : "";
             argUsed = 0;
-            nextArg = i + 1 < argc ? argv[i + 1] : "";
-
             if (!*token) { /* The user wants to use stdin and/or stdout. */
                 input_file = 1;
                 if (inPath[0] == '\0')
@@ -2258,10 +2254,11 @@ parse_args_(lame_global_flags * gfp, int argc, char **argv,
 
             }
             else {
+                char    c;
                 while ((c = *token++) != '\0') {
                     double double_value = 0;
                     int int_value = 0;
-                    arg = *token ? token : nextArg;
+                    char const *arg = *token ? token : nextArg;
                     switch (c) {
                     case 'm':
                         argUsed = 1;
@@ -2480,7 +2477,9 @@ parse_args_(lame_global_flags * gfp, int argc, char **argv,
                     error_printf
                         ("Error: 'nogap option'.  Calling program does not allow nogap option, or\n"
                          "you have exceeded maximum number of input files for the nogap option\n");
-                    *num_nogap = -1;
+                    if (num_nogap) {
+                        *num_nogap = -1;
+                    }
                     return -1;
                 }
             }

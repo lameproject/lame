@@ -30,12 +30,16 @@ class PcmGenerator
   float m_a;
   float m_b;
 
-  double random()
+  static double random()
   {
     int const range_max = 32768;
     int const range_min = -32767;
     return (double)rand() / (RAND_MAX + 1) * (range_max - range_min) + range_min;
   }
+
+  PcmGenerator( PcmGenerator const& );
+  PcmGenerator& operator = ( PcmGenerator const& );
+
 public:
 
   explicit PcmGenerator(int size)
@@ -146,9 +150,6 @@ public:
     return m_gf != 0;
   }
 
-  operator lame_t () {
-    return m_gf;
-  }
   operator lame_t () const {
     return m_gf;
   }
@@ -187,6 +188,9 @@ class OutBuffer
   unsigned char* m_data;
   int m_size;
   int m_used;
+
+  OutBuffer( OutBuffer const& );
+  OutBuffer& operator = ( OutBuffer const& );
 
 public:
   

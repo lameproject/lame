@@ -290,7 +290,7 @@ addPcmBuffer(PcmBuffer * b, void *a0, void *a1, int read)
     }
     a_n = read - b->skip_start;
 
-    if (b != 0 && a_n > 0) {
+    if (a_n > 0) {
         int const a_skip = b->w * b->skip_start;
         int const a_want = b->w * a_n;
         int const b_used = b->w * b->u;
@@ -368,7 +368,7 @@ static get_audio_global_data global;
 
 
 #ifdef AMIGA_MPEGA
-int     lame_decode_initfile(const char *fullname, mp3data_struct * const mp3data);
+int     lame_decode_initfile_amiga(const char *fullname, mp3data_struct * const mp3data);
 #else
 int     lame_decode_initfile(FILE * fd, mp3data_struct * mp3data, int *enc_delay, int *enc_padding);
 #endif
@@ -752,9 +752,7 @@ get_audio_common(lame_t gfp, int buffer[2][1152], short buffer16[2][1152])
     short   buf_tmp16[2][1152];
     int     samples_read;
     int     samples_to_read;
-    unsigned int remaining;
     int     i;
-    int    *p;
 
     /* sanity checks, that's what we expect to be true */
     if ((num_channels < 1 || 2 < num_channels)
@@ -780,7 +778,7 @@ get_audio_common(lame_t gfp, int buffer[2][1152], short buffer16[2][1152])
      * are using LIBSNDFILE, this is not necessary 
      */
     if (global.count_samples_carefully) {
-        unsigned int tmp_num_samples;
+        unsigned int tmp_num_samples, remaining;
         /* get num_samples */
         if (is_mpeg_file_format(global_reader.input_format)) {
             tmp_num_samples = global_decoder.mp3input_data.nsamp;
@@ -812,6 +810,7 @@ get_audio_common(lame_t gfp, int buffer[2][1152], short buffer16[2][1152])
         }
     }
     else {
+        int    *p;
         if (global.snd_file) {
 #ifdef LIBSNDFILE
             samples_read = sf_read_int(global.snd_file, insamp, num_channels * samples_to_read);
@@ -1416,12 +1415,10 @@ static int
 parse_wave_header(lame_global_flags * gfp, FILE * sf)
 {
     uint32_t ui32_nSamplesPerSec = 0;
-    uint32_t ui32_nAvgBytesPerSec = 0;
     uint32_t ui32_DataChunkSize = 0;
     uint16_t ui16_wFormatTag = 0;
     uint16_t ui16_nChannels = 0;
     uint16_t ui16_wBitsPerSample = 0;
-    uint16_t ui16_nBlockAlign = 0;
 
     int     is_wav = 0;
     int     loop_sanity = 0;
@@ -1434,7 +1431,11 @@ parse_wave_header(lame_global_flags * gfp, FILE * sf)
     for (loop_sanity = 0; loop_sanity < 20; ++loop_sanity) {
         uint32_t ui32_ckID = read_32_bits_high_low(sf);
         if (ui32_ckID == WAV_ID_FMT) {
-            uint32_t ui32_cksize = read_32_bits_low_high(sf);
+            uint32_t ui32_nAvgBytesPerSec = 0;
+            uint32_t ui32_cksize = 0;
+            uint16_t ui16_nBlockAlign = 0;
+
+            ui32_cksize = read_32_bits_low_high(sf);
             ui32_cksize = make_even_number_of_bytes_in_length(ui32_cksize);
             if (ui32_cksize < 16u) {
                 /*DEBUGF("'fmt' chunk too short (only %ld bytes)!", ui32_cksize);*/
@@ -1898,7 +1899,7 @@ open_mpeg_file(lame_t gfp, char const *inPath, int *enc_delay, int *enc_padding)
         }
     }
 #ifdef AMIGA_MPEGA
-    if (-1 == lame_decode_initfile(inPath, &global_decoder.mp3input_data)) {
+    if (-1 == lame_decode_initfile_amiga(inPath, &global_decoder.mp3input_data)) {
         if (global_ui_config.silent < 10) {
             error_printf("Error reading headers in mp3 input file %s.\n", inPath);
         }

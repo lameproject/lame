@@ -35,13 +35,46 @@ BEVERSION		beVersion=NULL;
 BEWRITEVBRHEADER	beWriteVBRHeader=NULL;
 BEWRITEINFOTAG		beWriteInfoTag=NULL;
 
+struct Resources
+{
+	HINSTANCE	hDLL;
+	FILE*		pFileIn;
+	FILE*		pFileOut;
+	HBE_STREAM	hbeStream;
+	PBYTE		pMP3Buffer;
+	PSHORT		pWAVBuffer;
+
+	Resources()
+	{
+		hDLL			=NULL;
+		pFileIn			=NULL;
+		pFileOut		=NULL;
+		hbeStream		=0;
+		pMP3Buffer		=NULL;
+		pWAVBuffer		=NULL;
+	}
+
+	~Resources()
+	{
+		// close the MP3 Stream
+		if (hbeStream) beCloseStream(hbeStream);
+		// Delete WAV buffer
+		if (pWAVBuffer) delete [] pWAVBuffer;
+		// Delete MP3 Buffer
+		if (pMP3Buffer) delete [] pMP3Buffer;
+		// Close input file
+		if (pFileIn) fclose(pFileIn);
+		// Close output file
+		if (pFileOut) fclose(pFileOut);
+		// Were done, return OK result
+		if (hDLL) FreeLibrary(hDLL);
+	}
+};
 
 // Main program
 int main(int argc, char *argv[])
 {
-	HINSTANCE	hDLL			=NULL;
-	FILE*		pFileIn			=NULL;
-	FILE*		pFileOut		=NULL;
+	Resources	r; // frees Resources on destruction at block scope end
 	BE_VERSION	Version			={0,};
 	BE_CONFIG	beConfig		={0,};
 
@@ -50,11 +83,7 @@ int main(int argc, char *argv[])
 
 	DWORD		dwSamples		=0;
 	DWORD		dwMP3Buffer		=0;
-	HBE_STREAM	hbeStream		=0;
 	BE_ERR		err				=0;
-
-	PBYTE		pMP3Buffer		=NULL;
-	PSHORT		pWAVBuffer		=NULL;
 
 	// check number of arguments
 	if(argc != 2)
@@ -76,27 +105,27 @@ int main(int argc, char *argv[])
 	// Load lame_enc.dll library (Make sure though that you set the
 	// project/settings/debug Working Directory correctly, otherwhise the DLL can't be loaded
 
-	hDLL = LoadLibrary("lame_enc.dll");
+	r.hDLL = LoadLibrary("lame_enc.dll");
 
-  	if ( NULL == hDLL )
-  	{
-  		hDLL = LoadLibrary("..\\..\\output\\lame_enc.dll");
-  	}
+	if ( NULL == r.hDLL )
+	{
+		r.hDLL = LoadLibrary("..\\..\\output\\lame_enc.dll");
+	}
 
-	if( NULL == hDLL )
+	if( NULL == r.hDLL )
 	{
 		fprintf(stderr,"Error loading lame_enc.DLL");
 		return -1;
 	}
 
 	// Get Interface functions from the DLL
-	beInitStream	= (BEINITSTREAM) GetProcAddress(hDLL, TEXT_BEINITSTREAM);
-	beEncodeChunk	= (BEENCODECHUNK) GetProcAddress(hDLL, TEXT_BEENCODECHUNK);
-	beDeinitStream	= (BEDEINITSTREAM) GetProcAddress(hDLL, TEXT_BEDEINITSTREAM);
-	beCloseStream	= (BECLOSESTREAM) GetProcAddress(hDLL, TEXT_BECLOSESTREAM);
-	beVersion	= (BEVERSION) GetProcAddress(hDLL, TEXT_BEVERSION);
-	beWriteVBRHeader= (BEWRITEVBRHEADER) GetProcAddress(hDLL,TEXT_BEWRITEVBRHEADER);
-	beWriteInfoTag  = (BEWRITEINFOTAG) GetProcAddress(hDLL,TEXT_BEWRITEINFOTAG);
+	beInitStream	= (BEINITSTREAM) GetProcAddress(r.hDLL, TEXT_BEINITSTREAM);
+	beEncodeChunk	= (BEENCODECHUNK) GetProcAddress(r.hDLL, TEXT_BEENCODECHUNK);
+	beDeinitStream	= (BEDEINITSTREAM) GetProcAddress(r.hDLL, TEXT_BEDEINITSTREAM);
+	beCloseStream	= (BECLOSESTREAM) GetProcAddress(r.hDLL, TEXT_BECLOSESTREAM);
+	beVersion	= (BEVERSION) GetProcAddress(r.hDLL, TEXT_BEVERSION);
+	beWriteVBRHeader= (BEWRITEVBRHEADER) GetProcAddress(r.hDLL,TEXT_BEWRITEVBRHEADER);
+	beWriteInfoTag  = (BEWRITEINFOTAG) GetProcAddress(r.hDLL,TEXT_BEWRITEINFOTAG);
 
 	// Check if all interfaces are present
 	if(!beInitStream || !beEncodeChunk || !beDeinitStream || !beCloseStream || !beVersion || !beWriteVBRHeader)
@@ -118,23 +147,22 @@ int main(int argc, char *argv[])
 			Version.zHomepage);
 
 	// Try to open the WAV file, be sure to open it as a binary file!
-	pFileIn = fopen( strFileIn, "rb" );
+	r.pFileIn = fopen( strFileIn, "rb" );
 
 	// Check file open result
-	if(pFileIn == NULL)
+	if(r.pFileIn == NULL)
 	{
 		fprintf(stderr,"Error opening %s", argv[1]);
 		return -1;
 	}
 
 	// Open MP3 file
-	pFileOut= fopen(strFileOut,"wb+");
+	r.pFileOut= fopen(strFileOut,"wb+");
 
 	// Check file open result
-	if(pFileOut == NULL)
+	if(r.pFileOut == NULL)
 	{
 		fprintf(stderr,"Error creating file %s", strFileOut);
-		fclose(pFileIn);
 		return -1;
 	}
 
@@ -170,30 +198,26 @@ int main(int argc, char *argv[])
 //	beConfig.format.LHV1.nPreset			= LQP_PHONE;
 
 	// Init the MP3 Stream
-	err = beInitStream(&beConfig, &dwSamples, &dwMP3Buffer, &hbeStream);
+	err = beInitStream(&beConfig, &dwSamples, &dwMP3Buffer, &r.hbeStream);
 
 	// Check result
 	if(err != BE_ERR_SUCCESSFUL)
 	{
 		fprintf(stderr,"Error opening encoding stream (%lu)", err);
-		fclose(pFileIn);
-		fclose(pFileOut);
 		return -1;
 	}
 
 
 	// Allocate MP3 buffer
-	pMP3Buffer = new BYTE[dwMP3Buffer];
+	r.pMP3Buffer = new BYTE[dwMP3Buffer];
 
 	// Allocate WAV buffer
-	pWAVBuffer = new SHORT[dwSamples];
+	r.pWAVBuffer = new SHORT[dwSamples];
 
 	// Check if Buffer are allocated properly
-	if(!pMP3Buffer || !pWAVBuffer)
+	if(!r.pMP3Buffer || !r.pWAVBuffer)
 	{
 		printf("Out of memory");
-		fclose(pFileIn);
-		fclose(pFileOut);
 		return -1;
 	}
 
@@ -203,32 +227,31 @@ int main(int argc, char *argv[])
 	DWORD dwFileSize=0;
 
 	// Seek to end of file
-	fseek(pFileIn,0,SEEK_END);
+	fseek(r.pFileIn,0,SEEK_END);
 
 	// Get the file size
-	dwFileSize=ftell(pFileIn);
+	dwFileSize=ftell(r.pFileIn);
 
 	// Seek back to start of WAV file,
 	// but skip the first 44 bytes, since that's the WAV header
-	fseek(pFileIn,44,SEEK_SET);
+	fseek(r.pFileIn,44,SEEK_SET);
 
 
 	// Convert All PCM samples
-	while ( (dwRead=fread(pWAVBuffer,sizeof(SHORT),dwSamples,pFileIn)) >0 )
+	while ( (dwRead=fread(r.pWAVBuffer,sizeof(SHORT),dwSamples,r.pFileIn)) >0 )
 	{
 		// Encode samples
-		err = beEncodeChunk(hbeStream, dwRead, pWAVBuffer, pMP3Buffer, &dwWrite);
+		err = beEncodeChunk(r.hbeStream, dwRead, r.pWAVBuffer, r.pMP3Buffer, &dwWrite);
 
 		// Check result
 		if(err != BE_ERR_SUCCESSFUL)
 		{
-			beCloseStream(hbeStream);
 			fprintf(stderr,"beEncodeChunk() failed (%lu)", err);
 			return -1;
 		}
 
 		// write dwWrite bytes that are returned in tehe pMP3Buffer to disk
-		if(fwrite(pMP3Buffer,1,dwWrite,pFileOut) != dwWrite)
+		if(fwrite(r.pMP3Buffer,1,dwWrite,r.pFileOut) != dwWrite)
 		{
 			fprintf(stderr,"Output file write error");
 			return -1;
@@ -240,13 +263,11 @@ int main(int argc, char *argv[])
 	}
 
 	// Deinit the stream
-	err = beDeinitStream(hbeStream, pMP3Buffer, &dwWrite);
+	err = beDeinitStream(r.hbeStream, r.pMP3Buffer, &dwWrite);
 
 	// Check result
 	if(err != BE_ERR_SUCCESSFUL)
 	{
-
-		beCloseStream(hbeStream);
 		fprintf(stderr,"beExitStream failed (%lu)", err);
 		return -1;
 	}
@@ -255,32 +276,20 @@ int main(int argc, char *argv[])
 	// If so, write them to disk
 	if( dwWrite )
 	{
-		if( fwrite( pMP3Buffer, 1, dwWrite, pFileOut ) != dwWrite )
+		if( fwrite( r.pMP3Buffer, 1, dwWrite, r.pFileOut ) != dwWrite )
 		{
 			fprintf(stderr,"Output file write error");
 			return -1;
 		}
 	}
 
-	// close the MP3 Stream
-	beCloseStream( hbeStream );
-
-	// Delete WAV buffer
-	delete [] pWAVBuffer;
-
-	// Delete MP3 Buffer
-	delete [] pMP3Buffer;
-
-	// Close input file
-	fclose( pFileIn );
-
 	// Close output file
-	fclose( pFileOut );
+	fclose( r.pFileOut );
 
 	if ( beWriteInfoTag )
 	{
 		// Write the INFO Tag
-		beWriteInfoTag( hbeStream, strFileOut );
+		beWriteInfoTag( r.hbeStream, strFileOut );
 	}
 	else
 	{

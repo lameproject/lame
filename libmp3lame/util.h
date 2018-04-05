@@ -560,7 +560,7 @@ extern  "C" {
     extern int FindNearestBitrate(int, int, int);
     extern int map2MP3Frequency(int freq);
     extern int SmpFrqIndex(int, int *const);
-    extern int nearestBitrateFullIndex(uint16_t brate);
+    extern int nearestBitrateFullIndex(uint16_t bitrate);
     extern FLOAT ATHformula(SessionConfig_t const *cfg, FLOAT freq);
     extern FLOAT freq2bark(FLOAT freq);
     void    disable_FPE(void);

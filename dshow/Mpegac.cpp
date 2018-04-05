@@ -159,7 +159,7 @@ AMOVIESETUP_PIN sudMpgPins[] =
 
 AMOVIESETUP_FILTER sudMpgAEnc =
 {
-	&CLSID_LAMEDShowFilter,
+    &CLSID_LAMEDShowFilter,
     L"LAME Audio Encoder",
     DEFAULT_FILTER_MERIT,                  // Standard compressor merit value
     NUMELMS(sudMpgPins),                   // 2 pins
@@ -380,34 +380,33 @@ HRESULT CMpegAudEnc::FlushEncodedSamples()
     IMediaSample * pOutSample = NULL;
     BYTE * pDst = NULL;
 
-	if(m_bStreamOutput)
-	{
-		HRESULT hr = S_OK;
-		const unsigned char *   pblock      = NULL;
-		int iBufferSize;
-		int iBlockLength = m_Encoder.GetBlockAligned(&pblock, &iBufferSize, m_cbStreamAlignment);
-		
-		if(!iBlockLength)
-			return S_OK;
+    if(m_bStreamOutput)
+    {
+        HRESULT hr = S_OK;
+        const unsigned char *   pblock      = NULL;
+        int iBufferSize;
+        int iBlockLength = m_Encoder.GetBlockAligned(&pblock, &iBufferSize, m_cbStreamAlignment);
 
-		hr = m_pOutput->GetDeliveryBuffer(&pOutSample, NULL, NULL, 0);
-		if (hr == S_OK && pOutSample)
-		{
-			hr = pOutSample->GetPointer(&pDst);
-			if (hr == S_OK && pDst)
-			{
-				CopyMemory(pDst, pblock, iBlockLength);
-				REFERENCE_TIME rtEndPos = m_rtBytePos + iBufferSize;
-				EXECUTE_ASSERT(S_OK == pOutSample->SetTime(&m_rtBytePos, &rtEndPos));
-				pOutSample->SetActualDataLength(iBufferSize);
-				m_rtBytePos += iBlockLength;
-				m_pOutput->Deliver(pOutSample);
-			}
+        if(!iBlockLength)
+            return S_OK;
 
-			pOutSample->Release();
-		}
-		return S_OK;
-	}
+        hr = m_pOutput->GetDeliveryBuffer(&pOutSample, NULL, NULL, 0);
+        if (hr == S_OK && pOutSample)
+        {
+            hr = pOutSample->GetPointer(&pDst);
+            if (hr == S_OK && pDst)
+            {
+                CopyMemory(pDst, pblock, iBlockLength);
+                REFERENCE_TIME rtEndPos = m_rtBytePos + iBufferSize;
+                EXECUTE_ASSERT(S_OK == pOutSample->SetTime(&m_rtBytePos, &rtEndPos));
+                pOutSample->SetActualDataLength(iBufferSize);
+                m_rtBytePos += iBlockLength;
+                m_pOutput->Deliver(pOutSample);
+            }
+            pOutSample->Release();
+        }
+        return S_OK;
+    }
 
     if (m_rtStreamTime < 0)
         m_rtStreamTime = 0;
@@ -434,28 +433,20 @@ HRESULT CMpegAudEnc::FlushEncodedSamples()
         REFERENCE_TIME rtStart = m_rtStreamTime;
         REFERENCE_TIME rtStop = rtStart + m_rtFrameTime;
 
-		HRESULT hr = S_OK;
-		
-		hr = m_pOutput->GetDeliveryBuffer(&pOutSample, NULL, NULL, 0);
-		if (hr == S_OK && pOutSample)
-		{
-			hr = pOutSample->GetPointer(&pDst);
-			if (hr == S_OK && pDst)
-			{
-				CopyMemory(pDst, pframe, frame_size);
-				pOutSample->SetActualDataLength(frame_size);
-			
-				pOutSample->SetSyncPoint(TRUE);
-				pOutSample->SetTime(&rtStart, m_setDuration ? &rtStop : NULL);
-			
-
-				m_pOutput->Deliver(pOutSample);
-			}
-
-			pOutSample->Release();
-		}
-	
-
+        HRESULT hr = m_pOutput->GetDeliveryBuffer(&pOutSample, NULL, NULL, 0);
+        if (hr == S_OK && pOutSample)
+        {
+            hr = pOutSample->GetPointer(&pDst);
+            if (hr == S_OK && pDst)
+            {
+                CopyMemory(pDst, pframe, frame_size);
+                pOutSample->SetActualDataLength(frame_size);
+                pOutSample->SetSyncPoint(TRUE);
+                pOutSample->SetTime(&rtStart, m_setDuration ? &rtStop : NULL);
+                m_pOutput->Deliver(pOutSample);
+            }
+            pOutSample->Release();
+        }
         m_samplesOut += m_samplesPerFrame;
         m_rtStreamTime = rtStop;
     }
@@ -472,26 +463,23 @@ HRESULT CMpegAudEnc::StartStreaming()
     WAVEFORMATEX * pwfxIn  = (WAVEFORMATEX *) m_pInput->CurrentMediaType().Format();
 
     m_bytesPerSample    = pwfxIn->nChannels * sizeof(short);
-	DWORD dwOutSampleRate;
-	if(MEDIATYPE_Stream == m_pOutput->CurrentMediaType().majortype)
-	{
-		MPEG_ENCODER_CONFIG mcfg;
-		if(FAILED(m_Encoder.GetOutputType(&mcfg)))
-			return E_FAIL;
-		
-		dwOutSampleRate = mcfg.dwSampleRate;
-	}
-	else
-	{
-		dwOutSampleRate = ((WAVEFORMATEX *) m_pOutput->CurrentMediaType().Format())->nSamplesPerSec;
-	}
-	m_samplesPerFrame   = (dwOutSampleRate >= 32000) ? 1152 : 576;
-
+    DWORD dwOutSampleRate;
+    if(MEDIATYPE_Stream == m_pOutput->CurrentMediaType().majortype)
+    {
+        MPEG_ENCODER_CONFIG mcfg;
+        if(FAILED(m_Encoder.GetOutputType(&mcfg)))
+            return E_FAIL;
+        dwOutSampleRate = mcfg.dwSampleRate;
+    }
+    else
+    {
+        dwOutSampleRate = ((WAVEFORMATEX *) m_pOutput->CurrentMediaType().Format())->nSamplesPerSec;
+    }
+    m_samplesPerFrame   = (dwOutSampleRate >= 32000) ? 1152 : 576;
     m_rtFrameTime = MulDiv(10000000, m_samplesPerFrame, dwOutSampleRate);
-
     m_samplesIn = m_samplesOut = 0;
     m_rtStreamTime = -1;
-	m_rtBytePos = 0;
+    m_rtBytePos = 0;
 
     // initialize encoder
     m_Encoder.Init();
@@ -511,27 +499,27 @@ HRESULT CMpegAudEnc::StartStreaming()
     get_SetDuration(&m_setDuration);
     get_SampleOverlap(&m_allowOverlap);
 
-	return S_OK;
+    return S_OK;
 }
 
 
 HRESULT CMpegAudEnc::StopStreaming()
 {
-	IStream *pStream = NULL;
-	if(m_bStreamOutput && m_pOutput->IsConnected() != FALSE)
-	{
-		IPin * pDwnstrmInputPin = m_pOutput->GetConnected();
-		if(pDwnstrmInputPin && FAILED(pDwnstrmInputPin->QueryInterface(IID_IStream, (LPVOID*)(&pStream))))
-		{
-			pStream = NULL;
-		}
-	}
-	
+  IStream *pStream = NULL;
+    if(m_bStreamOutput && m_pOutput->IsConnected() != FALSE)
+    {
+        IPin * pDwnstrmInputPin = m_pOutput->GetConnected();
+        if(pDwnstrmInputPin && FAILED(pDwnstrmInputPin->QueryInterface(IID_IStream, (LPVOID*)(&pStream))))
+        {
+            pStream = NULL;
+        }
+    }
+    
 
-	m_Encoder.Close(pStream);
+    m_Encoder.Close(pStream);
 
-	if(pStream)
-		pStream->Release();
+    if(pStream)
+        pStream->Release();
 
     return S_OK;
 }
@@ -548,30 +536,30 @@ HRESULT CMpegAudEnc::EndOfStream()
     m_Encoder.Finish();
     FlushEncodedSamples();
 
-	IStream *pStream = NULL;
+    IStream *pStream = NULL;
     if(m_bStreamOutput && m_pOutput->IsConnected() != FALSE)
-	{
-		IPin * pDwnstrmInputPin = m_pOutput->GetConnected();
-		if(pDwnstrmInputPin)
-		{
-			if(FAILED(pDwnstrmInputPin->QueryInterface(IID_IStream, (LPVOID*)(&pStream))))
-			{
-				pStream = NULL;	
-			}
-		}
-	}
+    {
+        IPin * pDwnstrmInputPin = m_pOutput->GetConnected();
+        if(pDwnstrmInputPin)
+        {
+            if(FAILED(pDwnstrmInputPin->QueryInterface(IID_IStream, (LPVOID*)(&pStream))))
+            {
+                pStream = NULL;	
+            }
+        }
+    }
 
-	if(pStream)
-	{
-		ULARGE_INTEGER size;
-		size.QuadPart = m_rtBytePos;
-		pStream->SetSize(size);	
-	}
+    if(pStream)
+    {
+        ULARGE_INTEGER size;
+        size.QuadPart = m_rtBytePos;
+        pStream->SetSize(size);	
+    }
 
-	m_Encoder.Close(pStream);
+    m_Encoder.Close(pStream);
 
-	if(pStream)
-		pStream->Release();
+    if(pStream)
+        pStream->Release();
 
     m_hasFinished = TRUE;
 
@@ -596,20 +584,20 @@ HRESULT CMpegAudEnc::BeginFlush()
         m_Encoder.Finish();
         FlushEncodedSamples();
 
-		IStream *pStream = NULL;
-		if(m_bStreamOutput && m_pOutput->IsConnected() != FALSE)
-		{
-			IPin * pDwnstrmInputPin = m_pOutput->GetConnected();
-			if(pDwnstrmInputPin && SUCCEEDED(pDwnstrmInputPin->QueryInterface(IID_IStream, (LPVOID*)(&pStream))))
-			{
-				ULARGE_INTEGER size;
-				size.QuadPart = m_rtBytePos;
-				pStream->SetSize(size);	
-				pStream->Release();
-			}
-		}
-	    m_rtStreamTime = -1;
-		m_rtBytePos = 0;
+        IStream *pStream = NULL;
+        if(m_bStreamOutput && m_pOutput->IsConnected() != FALSE)
+        {
+            IPin * pDwnstrmInputPin = m_pOutput->GetConnected();
+            if(pDwnstrmInputPin && SUCCEEDED(pDwnstrmInputPin->QueryInterface(IID_IStream, (LPVOID*)(&pStream))))
+            {
+                ULARGE_INTEGER size;
+                size.QuadPart = m_rtBytePos;
+                pStream->SetSize(size);	
+                pStream->Release();
+            }
+        }
+        m_rtStreamTime = -1;
+        m_rtBytePos = 0;
     }
 
     return hr;
@@ -622,15 +610,18 @@ HRESULT CMpegAudEnc::BeginFlush()
 ////////////////////////////////////////////////////////////////////////////
 HRESULT CMpegAudEnc::SetMediaType(PIN_DIRECTION direction, const CMediaType * pmt)
 {
+    if (pmt == NULL)
+        return E_POINTER;
+
     HRESULT hr = S_OK;
 
     if (direction == PINDIR_INPUT)
     {
-		if (*pmt->FormatType() != FORMAT_WaveFormatEx)
+        if (*pmt->FormatType() != FORMAT_WaveFormatEx)
         return VFW_E_INVALIDMEDIATYPE;
 
-		if (pmt->FormatLength() < sizeof(WAVEFORMATEX))
-			return VFW_E_INVALIDMEDIATYPE;
+        if (pmt->FormatLength() < sizeof(WAVEFORMATEX))
+            return VFW_E_INVALIDMEDIATYPE;
 
         DbgLog((LOG_TRACE,1,TEXT("CMpegAudEnc::SetMediaType(), direction = PINDIR_INPUT")));
 
@@ -638,15 +629,17 @@ HRESULT CMpegAudEnc::SetMediaType(PIN_DIRECTION direction, const CMediaType * pm
         m_Encoder.SetInputType((LPWAVEFORMATEX)pmt->Format());
 
         WAVEFORMATEX * pwfx = (WAVEFORMATEX *)pmt->Format();
+        DWORD sample_rate = 44100;
 
-        if (pwfx)
+        if (pwfx) {
+            sample_rate = pwfx->nSamplesPerSec;
             m_bytesToDuration = (float)1.e7 / (float)(pwfx->nChannels * sizeof(short) * pwfx->nSamplesPerSec);
-        else
+        } else {
             m_bytesToDuration = 0.0;
-
+        }
         // Parse the encoder output capabilities into the subset of capabilities that are supported 
         // for the current input format. This listing will be utilized by the IAMStreamConfig Interface.
-        LoadOutputCapabilities(pwfx->nSamplesPerSec);
+        LoadOutputCapabilities(sample_rate);
 
         Reconnect();
     }
@@ -695,30 +688,30 @@ HRESULT CMpegAudEnc::CheckInputType(const CMediaType* mtIn)
 ////////////////////////////////////////////////////////////////////////////
 HRESULT CMpegAudEnc::CheckTransform(const CMediaType* mtIn, const CMediaType* mtOut)
 {
-	if(MEDIATYPE_Stream != mtOut->majortype)
-	{
-		if (*mtOut->FormatType() != FORMAT_WaveFormatEx)
-			return VFW_E_INVALIDMEDIATYPE;
+    if(MEDIATYPE_Stream != mtOut->majortype)
+    {
+        if (*mtOut->FormatType() != FORMAT_WaveFormatEx)
+            return VFW_E_INVALIDMEDIATYPE;
 
-		if (mtOut->FormatLength() < sizeof(WAVEFORMATEX))
-			return VFW_E_INVALIDMEDIATYPE;
+        if (mtOut->FormatLength() < sizeof(WAVEFORMATEX))
+            return VFW_E_INVALIDMEDIATYPE;
 
-		MPEG_ENCODER_CONFIG	mec;
-		if(FAILED(m_Encoder.GetOutputType(&mec)))
-			return S_OK;
+        MPEG_ENCODER_CONFIG	mec;
+        if(FAILED(m_Encoder.GetOutputType(&mec)))
+            return S_OK;
 
-		if (((LPWAVEFORMATEX)mtIn->Format())->nSamplesPerSec % mec.dwSampleRate != 0)
-			return S_OK;
+        if (((LPWAVEFORMATEX)mtIn->Format())->nSamplesPerSec % mec.dwSampleRate != 0)
+            return S_OK;
 
-		if (mec.dwSampleRate != ((LPWAVEFORMATEX)mtOut->Format())->nSamplesPerSec)
-			return VFW_E_TYPE_NOT_ACCEPTED;
+        if (mec.dwSampleRate != ((LPWAVEFORMATEX)mtOut->Format())->nSamplesPerSec)
+            return VFW_E_TYPE_NOT_ACCEPTED;
 
-		return S_OK;
-	}
-	else if(mtOut->subtype == MEDIASUBTYPE_MPEG1Audio)
-		return S_OK;
+        return S_OK;
+    }
+    else if(mtOut->subtype == MEDIASUBTYPE_MPEG1Audio)
+        return S_OK;
 
-	return VFW_E_TYPE_NOT_ACCEPTED;
+    return VFW_E_TYPE_NOT_ACCEPTED;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -730,16 +723,16 @@ HRESULT CMpegAudEnc::DecideBufferSize(
 {
     HRESULT hr = S_OK;
 
-	if(m_bStreamOutput)
-		m_cbStreamAlignment = pProperties->cbAlign;
+    if(m_bStreamOutput)
+        m_cbStreamAlignment = pProperties->cbAlign;
 
     ///
     if (pProperties->cBuffers == 0) pProperties->cBuffers = 1;  // If downstream filter didn't suggest a buffer count then default to 1
     pProperties->cbBuffer = OUT_BUFFER_SIZE;
-	//
-	
-	ASSERT(pProperties->cbBuffer);
-	
+    //
+    
+    ASSERT(pProperties->cbBuffer);
+    
     ALLOCATOR_PROPERTIES Actual;
     hr = pAllocator->SetProperties(pProperties,&Actual);
     if(FAILED(hr))
@@ -781,7 +774,7 @@ HRESULT CMpegAudEnc::Reconnect()
         {
             // Create an updated output MediaType using the current encoder settings
             CMediaType cmt;
-			cmt.InitMediaType();
+            cmt.InitMediaType();
             m_pOutput->GetMediaType(m_currentMediaTypeIndex, &cmt);
 
             // If the updated MediaType matches the current output MediaType no reconnect is needed
@@ -893,7 +886,7 @@ STDMETHODIMP CMpegAudEnc::NonDelegatingQueryInterface(REFIID riid, void ** ppv)
 
     if (riid == IID_ISpecifyPropertyPages)
         return GetInterface((ISpecifyPropertyPages *) this, ppv);
-	else if(riid == IID_IPersistStream)
+    else if(riid == IID_IPersistStream)
         return GetInterface((IPersistStream *)this, ppv);
 //    else if (riid == IID_IVAudioEncSettings)
 //        return GetInterface((IVAudioEncSettings*) this, ppv);
@@ -1400,9 +1393,8 @@ STDMETHODIMP CMpegAudEnc::set_ModeFixed(DWORD dwModeFixed)
 
 STDMETHODIMP CMpegAudEnc::get_ParameterBlockSize(BYTE *pcBlock, DWORD *pdwSize)
 {
-    DbgLog((LOG_TRACE, 1, TEXT("get_ParameterBlockSize -> %d%d"), *pcBlock, *pdwSize));
-
-    if (pcBlock != NULL) {
+    if (pcBlock != NULL && pdwSize != NULL) {
+        DbgLog((LOG_TRACE, 1, TEXT("get_ParameterBlockSize -> %d%d"), *pcBlock, *pdwSize));
         if (*pdwSize >= sizeof(MPEG_ENCODER_CONFIG)) {
             m_Encoder.GetOutputType((MPEG_ENCODER_CONFIG*)pcBlock);
             return S_OK;
@@ -1422,12 +1414,14 @@ STDMETHODIMP CMpegAudEnc::get_ParameterBlockSize(BYTE *pcBlock, DWORD *pdwSize)
 
 STDMETHODIMP CMpegAudEnc::set_ParameterBlockSize(BYTE *pcBlock, DWORD dwSize)
 {
-    DbgLog((LOG_TRACE, 1, TEXT("get_ParameterBlockSize(%d, %d)"), *pcBlock, dwSize));
-    if (sizeof(MPEG_ENCODER_CONFIG) == dwSize){
-        m_Encoder.SetOutputType(*(MPEG_ENCODER_CONFIG*)pcBlock);
-        return S_OK;
+    if (pcBlock != NULL) {
+        DbgLog((LOG_TRACE, 1, TEXT("get_ParameterBlockSize(%d, %d)"), *pcBlock, dwSize));
+        if (sizeof(MPEG_ENCODER_CONFIG) == dwSize){
+            m_Encoder.SetOutputType(*(MPEG_ENCODER_CONFIG*)pcBlock);
+            return S_OK;
+        }
     }
-    else return E_FAIL; 
+    return E_FAIL; 
 }
 
 
@@ -1565,10 +1559,10 @@ HRESULT CMpegAudEnc::WriteToStream(IStream *pStream)
 {
     DbgLog((LOG_TRACE,1,TEXT("WriteToStream()")));
 
-	MPEG_ENCODER_CONFIG mec;
+    MPEG_ENCODER_CONFIG mec;
 
-	if(m_Encoder.GetOutputType(&mec) == S_FALSE)
-		return E_FAIL;
+    if(m_Encoder.GetOutputType(&mec) == S_FALSE)
+        return E_FAIL;
 
     return pStream->Write(&mec, sizeof(mec), 0);
 }
@@ -1578,14 +1572,14 @@ HRESULT CMpegAudEnc::WriteToStream(IStream *pStream)
 // are in
 HRESULT CMpegAudEnc::ReadFromStream(IStream *pStream)
 {
-	MPEG_ENCODER_CONFIG mec;
+    MPEG_ENCODER_CONFIG mec;
 
     HRESULT hr = pStream->Read(&mec, sizeof(mec), 0);
     if(FAILED(hr))
         return hr;
 
-	if(m_Encoder.SetOutputType(mec) == S_FALSE)
-		return S_FALSE;
+    if(m_Encoder.SetOutputType(mec) == S_FALSE)
+        return S_FALSE;
 
     DbgLog((LOG_TRACE,1,TEXT("ReadFromStream() succeeded")));
 

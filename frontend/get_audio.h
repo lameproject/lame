@@ -42,7 +42,7 @@ typedef enum sound_file_format_e {
     sf_ogg
 } sound_file_format;
 
-int     is_mpeg_file_format( int input_format );
+int     is_mpeg_file_format( int input_file_format );
 
 int     init_infile(lame_t gfp, char const * inPath);
 int     samples_to_skip_at_start(void);
@@ -83,7 +83,7 @@ int     aw_write(AudioWriter aw, float buffer[2][1152], int n);
 extern size_t sizeOfOldTag(lame_t gf);
 extern unsigned char* getOldTag(lame_t gf);
 
-#ifdef _cplusplus
+#ifdef __cplusplus
 }
 #endif
 

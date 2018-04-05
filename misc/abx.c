@@ -370,7 +370,7 @@ void  eval ( int right )
 
     val    = 1.L / prob ( okay, count );
 
-    fprintf (stderr, "   %s %5u/%-5u ", right ? "OK" : "- " , okay, count );
+    fprintf (stderr, "   %s %5d/%-5d ", right ? "OK" : "- " , okay, count );
     printnumber (val);
     if ( count > 1 )
         fprintf (stderr, "   %4.2f bit", 0.01 * (int)(logdual(val) / (count-1) * 100.) );
@@ -535,7 +535,7 @@ void setup ( int fdd, int samples, long freq )
         perror ("SOUND_PCM_WRITE_CHANNELS ioctl failed");
     if (arg != org)
         perror ("unable to set number of channels");
-    fprintf (stderr, "%1u*", arg);
+    fprintf (stderr, "%1d*", arg);
 
     org = arg = AFMT_S16_LE;
     if ( -1 == ioctl (fdd, SNDCTL_DSP_SETFMT, &arg) )
@@ -546,7 +546,7 @@ void setup ( int fdd, int samples, long freq )
     org = arg = freq;
     if ( -1 == (status = ioctl (fdd, SNDCTL_DSP_SPEED, &arg)) )
         perror ("SNDCTL_DSP_SPEED ioctl failed");
-    fprintf (stderr, "%5u Hz*%.3f sec\n", arg, (double)samples/arg );
+    fprintf (stderr, "%5d Hz*%.3f sec\n", arg, (double)samples/arg );
 
 }
 
@@ -745,7 +745,7 @@ void testing ( const stereo_t* A, const stereo_t* B, size_t len, long freq )
             fprintf (stderr, "   Vote for X:=A" );
             eval ( rnd == 0 );
             rnd   = random_number ();
-            if ( state == 6  &&  state == 7 )
+            if ( state == 6  ||  state == 7 )
                 state = 6 + rnd;
             else if ( state != rnd )
                 state = rnd + 2;
@@ -756,7 +756,7 @@ void testing ( const stereo_t* A, const stereo_t* B, size_t len, long freq )
             fprintf (stderr, "   Vote for X:=B" );
             eval ( rnd == 1 );
             rnd   = random_number ();
-            if ( state == 6  &&  state == 7 )
+            if ( state == 6  ||  state == 7 )
                 state = 6 + rnd;
             else if ( state != rnd )
                 state = rnd + 2;

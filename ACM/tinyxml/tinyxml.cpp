@@ -44,7 +44,7 @@ void TiXmlBase::PutString( const std::string& str, std::ostream* stream )
 		{
 			stream->write( &str.at( i ), str.length() - i );
 			return;
-   		}
+		}
 
 		// We found an entity.
 		if ( next - i > 0 )
@@ -52,8 +52,8 @@ void TiXmlBase::PutString( const std::string& str, std::ostream* stream )
 		i = next;
 
 		// Check for the special "&#x" entitity
-		if (    i < str.length() - 2
-		     && str[i] == '&'
+		if ( i < str.length() - 2
+			 && str[i] == '&'
 			 && str[i+1] == '#'
 			 && str[i+2] == 'x' )
 		{
@@ -862,10 +862,10 @@ TiXmlDeclaration::TiXmlDeclaration( const std::string& _version,
 									const std::string& _encoding,
 									const std::string& _standalone )
 	: TiXmlNode( TiXmlNode::DECLARATION ) 
+	, version( _version )
+	, encoding( _encoding )
+	, standalone( _standalone )
 {
-	version = _version;
-	encoding = _encoding;
-	standalone = _standalone;
 }
 
 

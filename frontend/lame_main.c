@@ -331,7 +331,7 @@ write_xing_frame(lame_global_flags * gf, FILE * outf, size_t offset)
     size_t  imp3, owrite;
 
     imp3 = lame_get_lametag_frame(gf, mp3buffer, sizeof(mp3buffer));
-    if (imp3 <= 0) {
+    if (imp3 == 0) {
         return 0;       /* nothing to do */
     }
     if (global_ui_config.silent <= 0) {
@@ -368,7 +368,7 @@ write_id3v1_tag(lame_t gf, FILE * outf)
     size_t  imp3, owrite;
 
     imp3 = lame_get_id3v1_tag(gf, mp3buffer, sizeof(mp3buffer));
-    if (imp3 <= 0) {
+    if (imp3 == 0) {
         return 0;
     }
     if (imp3 > sizeof(mp3buffer)) {

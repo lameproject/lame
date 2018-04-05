@@ -28,13 +28,13 @@
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 CEncoder::CEncoder() :
+    pgf(NULL),
     m_bInpuTypeSet(FALSE),
     m_bOutpuTypeSet(FALSE),
     m_bFinished(FALSE),
-    m_outOffset(0),
-    m_outReadOffset(0),
     m_frameCount(0),
-    pgf(NULL)
+    m_outOffset(0),
+    m_outReadOffset(0)
 {
     m_outFrameBuf = new unsigned char[OUT_BUFFER_SIZE];
 }

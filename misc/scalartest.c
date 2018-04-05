@@ -23,7 +23,7 @@ void init ( void )
     }
 }
 
-void test ( int no, scalar_t f )
+void test ( unsigned int no, scalar_t f )
 {
     unsigned long long  t1;
     unsigned long long  t2;
@@ -67,7 +67,7 @@ void testn ( scalarn_t f )
     double              curr = 0;
     
     for ( i = 1; i <= 64; i += i<6 ? 1 : i<8 ? 2 : i ) {
-        printf ( "[%3u] %22.14f\t\t", 4*i, (double)f (a1,a2,i) );
+        printf ( "[%3u] %22.14f\t\t", 4u*i, (double)f (a1,a2,i) );
         fflush ( stdout );
 
     do {

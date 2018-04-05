@@ -117,6 +117,7 @@ rtp_socket(char const *address, unsigned int port, unsigned int TTL)
     iRet = setsockopt(iSocket, SOL_SOCKET, SO_REUSEADDR, &iLoop, sizeof(int));
     if (iRet < 0) {
         error_printf("setsockopt SO_REUSEADDR failed\n");
+        close(iSocket);
         return 1;
     }
 
@@ -125,6 +126,7 @@ rtp_socket(char const *address, unsigned int port, unsigned int TTL)
         iRet = setsockopt(iSocket, IPPROTO_IP, IP_MULTICAST_TTL, &cTtl, sizeof(char));
         if (iRet < 0) {
             error_printf("setsockopt IP_MULTICAST_TTL failed.  multicast in kernel?\n");
+            close(iSocket);
             return 1;
         }
 
@@ -132,12 +134,14 @@ rtp_socket(char const *address, unsigned int port, unsigned int TTL)
         iRet = setsockopt(iSocket, IPPROTO_IP, IP_MULTICAST_LOOP, &cLoop, sizeof(char));
         if (iRet < 0) {
             error_printf("setsockopt IP_MULTICAST_LOOP failed.  multicast in kernel?\n");
+            close(iSocket);
             return 1;
         }
     }
     iRet = connect(iSocket, (struct sockaddr *) &sin, sizeof(struct sockaddr_in));
     if (iRet < 0) {
         error_printf("connect IP_MULTICAST_LOOP failed.  multicast in kernel?\n");
+        close(iSocket);
         return 1;
     }
 

@@ -54,6 +54,7 @@ void    error_flush(void);
 void    report_flush(void);
 
 void    console_up(int n_lines);
+int     console_getwidth(void);
 
 void    set_debug_file(const char *fn);
 

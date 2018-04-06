@@ -26,11 +26,11 @@
 extern "C" {
 #endif
 
-void    encoder_progress_begin( lame_global_flags const*    gfp
-                              , char const*                 inpath
-                              , char const*                 outpath );
-void    encoder_progress( lame_global_flags const* gfp );
-void    encoder_progress_end(lame_global_flags const* gfp);
+void    encoder_progress_begin( lame_global_flags const*    gf
+                              , char const*                 inPath
+                              , char const*                 outPath );
+void    encoder_progress( lame_global_flags const* gf );
+void    encoder_progress_end(lame_global_flags const* gf);
 
 struct DecoderProgress;
 typedef struct DecoderProgress* DecoderProgress;

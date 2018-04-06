@@ -45,32 +45,6 @@ char   *strchr(), *strrchr();
 #endif
 
 
-
-static int
-my_console_printing(FILE * fp, const char *format, va_list ap)
-{
-    if (fp != NULL)
-        return vfprintf(fp, format, ap);
-    return 0;
-}
-
-static int
-my_error_printing(FILE * fp, const char *format, va_list ap)
-{
-    if (fp != NULL)
-        return vfprintf(fp, format, ap);
-    return 0;
-}
-
-static int
-my_report_printing(FILE * fp, const char *format, va_list ap)
-{
-    if (fp != NULL)
-        return vfprintf(fp, format, ap);
-    return 0;
-}
-
-
 /*
  * Taken from Termcap_Manual.html:
  *
@@ -126,8 +100,17 @@ apply_termcap_settings(Console_IO_t * const mfp)
 #endif /* TERMCAP_AVAILABLE */
 
 static int
+is_console_initialized(Console_IO_t * const mfp)
+{
+    return mfp && mfp->ClassID == CLASS_ID ? 1 : 0;
+}
+
+static int
 init_console(Console_IO_t * const mfp)
 {
+    if (is_console_initialized(mfp)) {
+        return 0; /* already initialized */
+    }
     /* setup basics of brhist I/O channels */
     mfp->disp_width = 80;
     mfp->disp_height = 25;
@@ -162,6 +145,9 @@ init_console(Console_IO_t * const mfp)
 static void
 deinit_console(Console_IO_t * const mfp)
 {
+    if (!is_console_initialized(mfp)) {
+        return; /* not initialized or already de-initialized */
+    }
     if (mfp->Report_fp != NULL) {
         fclose(mfp->Report_fp);
         mfp->Report_fp = NULL;
@@ -172,10 +158,43 @@ deinit_console(Console_IO_t * const mfp)
     memset(mfp->Console_buff, 0x55, REPORT_BUFF_SIZE);
 }
 
-
 /*  LAME console
  */
 Console_IO_t Console_IO;
+
+enum ConsoleEnum { ConsoleIoConsole, ConsoleIoError, ConsoleIoReport };
+
+static FILE*
+frontend_console_file_handle(enum ConsoleEnum e)
+{
+    if (is_console_initialized(&Console_IO)) {
+        switch (e) {
+        case ConsoleIoConsole:  return Console_IO.Console_fp;
+        case ConsoleIoError:    return Console_IO.Error_fp;
+        case ConsoleIoReport:   return Console_IO.Report_fp;
+        }
+    }
+    return 0;
+}
+
+static int
+frontend_console_print(const char *format, va_list ap, enum ConsoleEnum e)
+{
+    FILE    *fp = frontend_console_file_handle(e);
+
+    if (fp != NULL)
+        return vfprintf(fp, format, ap);
+    return 0;
+}
+
+static void
+frontend_console_flush(enum ConsoleEnum e)
+{
+    FILE    *fp = frontend_console_file_handle(e);
+
+    if (fp != NULL)
+        fflush(fp);
+}
 
 int
 frontend_open_console(void)
@@ -192,19 +211,19 @@ frontend_close_console(void)
 void
 frontend_debugf(const char *format, va_list ap)
 {
-    (void) my_report_printing(Console_IO.Report_fp, format, ap);
+    (void) frontend_console_print(format, ap, ConsoleIoReport);
 }
 
 void
 frontend_msgf(const char *format, va_list ap)
 {
-    (void) my_console_printing(Console_IO.Console_fp, format, ap);
+    (void) frontend_console_print(format, ap, ConsoleIoConsole);
 }
 
 void
 frontend_errorf(const char *format, va_list ap)
 {
-    (void) my_error_printing(Console_IO.Error_fp, format, ap);
+    (void) frontend_console_print(format, ap, ConsoleIoError);
 }
 
 void
@@ -221,7 +240,7 @@ console_printf(const char *format, ...)
     int     ret;
 
     va_start(args, format);
-    ret = my_console_printing(Console_IO.Console_fp, format, args);
+    ret = frontend_console_print(format, args,ConsoleIoConsole);
     va_end(args);
 
     return ret;
@@ -234,7 +253,7 @@ error_printf(const char *format, ...)
     int     ret;
 
     va_start(args, format);
-    ret = my_console_printing(Console_IO.Error_fp, format, args);
+    ret = frontend_console_print(format, args, ConsoleIoError);
     va_end(args);
 
     return ret;
@@ -247,7 +266,7 @@ report_printf(const char *format, ...)
     int     ret;
 
     va_start(args, format);
-    ret = my_console_printing(Console_IO.Report_fp, format, args);
+    ret = frontend_console_print(format, args, ConsoleIoReport);
     va_end(args);
 
     return ret;
@@ -256,24 +275,26 @@ report_printf(const char *format, ...)
 void
 console_flush()
 {
-    fflush(Console_IO.Console_fp);
+    frontend_console_flush(ConsoleIoConsole);
 }
 
 void
 error_flush()
 {
-    fflush(Console_IO.Error_fp);
+    frontend_console_flush(ConsoleIoError);
 }
 
 void
 report_flush()
 {
-    fflush(Console_IO.Report_fp);
+    frontend_console_flush(ConsoleIoReport);
 }
 
 void
 console_up(int n_lines)
 {
+    if (!is_console_initialized(&Console_IO))
+        return; /* not initialized or already de-initialized */
 #if defined(_WIN32)  &&  !defined(__CYGWIN__)
     if (Console_IO.Console_file_type != FILE_TYPE_PIPE) {
         COORD   Pos;
@@ -292,17 +313,26 @@ console_up(int n_lines)
 #endif
 }
 
+int
+console_getwidth()
+{
+    if (is_console_initialized(&Console_IO))
+        return Console_IO.disp_width;
+    return 80; /* default value */
+}
 
 void
 set_debug_file(const char *fn)
 {
-    if (Console_IO.Report_fp == NULL) {
-        Console_IO.Report_fp = lame_fopen(fn, "a");
-        if (Console_IO.Report_fp != NULL) {
-            error_printf("writing debug info into: %s\n", fn);
-        }
-        else {
-            error_printf("Error: can't open for debug info: %s\n", fn);
+    if (is_console_initialized(&Console_IO)) {
+        if (Console_IO.Report_fp == NULL) {
+            Console_IO.Report_fp = lame_fopen(fn, "a");
+            if (Console_IO.Report_fp != NULL) {
+                error_printf("writing debug info into: %s\n", fn);
+            }
+            else {
+                error_printf("Error: can't open for debug info: %s\n", fn);
+            }
         }
     }
 }

@@ -166,7 +166,7 @@ static BOOL CALLBACK ConfigProc(
   LPARAM lParam  // second message parameter
   )
 {
-	BOOL bResult;
+	BOOL bResult = FALSE;
 	AEncodeProperties * the_prop;
 	the_prop = (AEncodeProperties *) GetProp(hwndDlg, "AEncodeProperties-Config");
 

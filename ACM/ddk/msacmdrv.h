@@ -31,6 +31,7 @@
 #include <mmreg.h>
 #include <msacm.h>
 
+#include "pshpack1.h"   /* Assume byte packing throughout */
 
 
 typedef  unsigned long ULONG_PTR, *PULONG_PTR;
@@ -181,5 +182,7 @@ typedef struct tACMDRVSTREAMHEADER
     DWORD                   cbPreparedDstLength;
 
 } ACMDRVSTREAMHEADER, *PACMDRVSTREAMHEADER;
+
+#include "poppack.h"    /* Revert to default packing */
 
 #endif

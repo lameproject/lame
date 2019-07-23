@@ -178,7 +178,7 @@ LPARAM lParam  // second message parameter
 //	static LOGFONT lf;  // structure for font information  
 //	static HFONT hfnt;
 	static HCURSOR hcOverCursor = NULL;
-	BOOL bResult;
+	BOOL bResult = FALSE;
 
 	switch (uMsg) {
 		case WM_INITDIALOG:

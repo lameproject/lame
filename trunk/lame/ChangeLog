@@ -7,6 +7,158 @@
 
 -- 
 
+2019-07-23 12:20  robert
+
+	* doc/html/history.html:
+	  udating history
+
+2019-07-23 09:34  robert
+
+	* ACM/ddk/msacmdrv.h:
+	  fix for tracker item #444 msacmdrv.h (structure packing
+	  alignment)
+
+2019-07-23 09:18  robert
+
+	* ACM/ACM.cpp, ACM/AEncodeProperties.cpp:
+	  fixed some uninitialzed variables
+
+2019-07-19 13:27  robert
+
+	* libmp3lame/quantize.c:
+	  bug fix for tracker item 501 Encoder: Assertion
+	  `eov->bitrate_index <= cfg->vbr_max_bitrate_index' failed
+	  
+	  When encoding a file in ABR mode, the resulting frame size could
+	  exceed the targeted amount of bits.
+	  This happens, when analog silence is detected and 'analog slince
+	  bits' is larger than 'target bits'.
+
+2019-06-28 13:05  robert
+
+	* doc/html/history.html, libmp3lame/lame.c:
+	  bug fix for tracker item #500 Buffer overflow in encoder
+
+2019-01-10 23:25  robert
+
+	* libmp3lame/vector/xmm_quantize_sub.c:
+	  bug tracker item #496: A critical bug in init_xrpow_core_sse
+
+2018-04-06 19:40  robert
+
+	* doc/html/history.html, frontend/console.c, frontend/console.h,
+	  frontend/timestatus.c, frontend/timestatus.h:
+	  - patch #82: Take advantage of terminal width on printing file
+	  names
+	  - some code refactorings
+
+2018-04-05 23:31  robert
+
+	* ACM/tinyxml/tinyxml.cpp, ACM/tinyxml/tinyxmlparser.cpp,
+	  Dll/Example.cpp, dshow/Encoder.cpp, dshow/Encoder.h,
+	  dshow/Mpegac.cpp, dshow/Mpegac.h, frontend/get_audio.c,
+	  frontend/get_audio.h, frontend/lame_main.c, frontend/main.c,
+	  frontend/main.h, frontend/parse.c, frontend/parse.h,
+	  frontend/rtp.c, libmp3lame/quantize.c, libmp3lame/reservoir.h,
+	  libmp3lame/set_get.c, libmp3lame/util.c, libmp3lame/util.h,
+	  misc/abx.c, misc/scalartest.c, test/lame_test.cpp:
+	  fixing some issues found by the cppcheck tool
+
+2018-03-17 10:53  robert
+
+	* configure.in, doc/html/history.html, frontend/main.c,
+	  frontend/parse.c, libmp3lame/i386/nasm.h, libmp3lame/version.h:
+	  patch #80 OS/2 patches, submitted by KO Myung-Hun
+
+2018-01-23 20:05  robert
+
+	* frontend/get_audio.c:
+	  Apple AIF format 'fl32' now possible to read, even without
+	  libsndfile
+
+2017-10-25 16:12  rjamorim
+
+	* doc/html/about.html, doc/html/abr.html, doc/html/cbr.html,
+	  doc/html/contact.html, doc/html/contributors.html,
+	  doc/html/detailed.html, doc/html/images/valid-html401.png,
+	  doc/html/index.html, doc/html/introduction.html,
+	  doc/html/list.html, doc/html/ms_stereo.html, doc/html/usage.html,
+	  doc/html/vbr.html:
+	  Comprehensive HTML formatting. Code now is much more readable
+
+2017-10-25 16:02  rjamorim
+
+	* doc/html/links.html:
+	  Minor fix
+
+2017-10-25 15:59  rjamorim
+
+	* doc/html/history.html:
+	  Fixed lots of formatting
+
+2017-10-24 18:41  rjamorim
+
+	* doc/html/styles/lame.css:
+	  Made the style more similar to the webpage's
+
+2017-10-24 18:30  rjamorim
+
+	* doc/html/history.html:
+	  Ooops. Missed one remote image in the history
+
+2017-10-24 18:17  rjamorim
+
+	* doc/html/links.html:
+	  Updated links information based on web site
+
+2017-10-24 17:20  rjamorim
+
+	* doc/html/about.html, doc/html/abr.html, doc/html/cbr.html,
+	  doc/html/contact.html, doc/html/contributors.html,
+	  doc/html/detailed.html, doc/html/images/sflogo.gif,
+	  doc/html/index.html, doc/html/introduction.html,
+	  doc/html/links.html, doc/html/list.html, doc/html/ms_stereo.html,
+	  doc/html/usage.html, doc/html/vbr.html:
+	  Replaced remote SF logo with local one. Because we care about
+	  privacy!
+
+2017-10-23 19:50  robert
+
+	* configure.in, frontend/parse.c:
+	  lame patches ticket #75: Fix for completing svn-r6410
+	  submitted by Elio Blanca
+
+2017-10-23 19:17  robert
+
+	* doc/man/lame.1, frontend/get_audio.c:
+	  some changes in spelling, suggested by Fabian Greffrath
+
+2017-10-14 15:41  robert
+
+	* frontend/parse.c:
+	  bug tracker item #487: v3.100 breaks Windows compatibility
+	  
+	  the change is incomplete, we need to add 'HAVE_LANGINFO' to our
+	  autoconf magic
+
+2017-10-14 14:17  aleidinger
+
+	* ChangeLog:
+	  svn2cl does not include branches anymore, this is "current-branch
+	  only" now
+
+2017-10-14 14:14  aleidinger
+
+	* Makefile.in:
+	  regen
+
+2017-10-14 14:12  aleidinger
+
+	* ChangeLog.header, Makefile.am, doc/html/contact.html,
+	  doc/html/contributors.html, doc/html/links.html,
+	  make_changelog.sh:
+	  switch references from CVS to SVN
+
 2017-10-13 20:39  aleidinger
 
 	* doc/html/history.html:

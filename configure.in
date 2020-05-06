@@ -96,7 +96,7 @@ if test "x${GCC}" = "xyes"; then
 		AC_MSG_CHECKING(version of GCC)
 		GCC_version="`${CC} --version | sed -n '1s/^[[^ ]]* (.*) //;s/ .*$//;1p'`"
 		case "${GCC_version}" in 
-		[0-9]*[0-9]*)
+		[[0-9]]*[[0-9]]*)
 			AC_MSG_RESULT(${GCC_version})
 			;;
 		*)
@@ -829,7 +829,7 @@ if test "x$HAVE_GCC" = "xyes" -o "x$HAVE_CLANG" = "xyes"; then
 			OPTIMIZATION_FULL="-fmove-all-movables -freduce-all-givs \
 				-fbranch-count-reg -fforce-addr -fforce-mem"
 			;;
-		[456789].*)
+		[[456789]].*|1[[0-9]].*)
 			OPTIMIZATION="-O3 -fomit-frame-pointer -ffast-math"
 			OPTIMIZATION_FULL="-fbranch-count-reg -fforce-addr"
 			;;
@@ -852,7 +852,7 @@ if test "x$HAVE_GCC" = "xyes" -o "x$HAVE_CLANG" = "xyes"; then
 		case "${GCC_version}" in
 		3.0*)
 			;;
-		[3456789].*)
+		[[3456789]].*|1[[0-9]].*)
 			# doesn't work on 3.0.x, but on 3.[12] and
 			# hopefully on every other release after that too
 			if test -x /usr/bin/isalist; then
@@ -867,7 +867,7 @@ if test "x$HAVE_GCC" = "xyes" -o "x$HAVE_CLANG" = "xyes"; then
 		;;
 	*86)
 		case "${GCC_version}" in
-		[3456789].*)
+		[[3456789]].*|1[[0-9]].*)
 			OPTIMIZATION="${OPTIMIZATION} \
 				-maccumulate-outgoing-args"
 			;;
@@ -925,7 +925,7 @@ if test "x$HAVE_GCC" = "xyes" -o "x$HAVE_CLANG" = "xyes"; then
 					;;
 				esac
 				;;
-			[456789].*)
+			[[456789]].*|1[[0-9]].*)
 				case ${host_cpu} in
 				*486)
 					OPTIMIZATION="${OPTIMIZATION} -march=i486"
@@ -968,7 +968,7 @@ if test "x$HAVE_GCC" = "xyes" -o "x$HAVE_CLANG" = "xyes"; then
 
 	if test "x${HAVE_CLANG}" = "xyes"; then
 		case "${CLANG_VERSION}" in
-		3.[89]*|[45].*)
+		3.[[89]]*|[[45]].*|1[[0-9]].*)
 			OPTIMIZATION="-Ofast"
 			;;
 		*)

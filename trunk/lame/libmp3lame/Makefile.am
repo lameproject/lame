@@ -58,6 +58,7 @@ libmp3lame_la_SOURCES = \
 
 noinst_HEADERS= \
 	VbrTag.h \
+	VbrTagCrc.h \
 	bitstream.h \
 	encoder.h \
 	fft.h \

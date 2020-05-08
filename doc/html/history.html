@@ -41,6 +41,22 @@
                     </li>
                 </ul>
             </li>
+            <li>
+                Alexander Leidinger
+                <ul>
+                    <li><font color="#3366ff">Add faster CRC routine. The speed improvement is very small for typical use cases, but may be valuable if a lot of independent encodes are running and/or for a very long time. Patch by Robert Kausch of the fre:ac project.
+                        </font>
+                    </li>
+                    <li><font color="#3366ff">Fix configure script glob-ranges matching of compiler versions. This may result in faster code if no compiler optimization flags are specified during the configure step. This is part of patch ticket <i>[ #491 ] lame 3.100 slower than 3.99.5</i>
+                        </font>
+                    </li>
+                    <li><font color="#3366ff">Disable Takehiros IEEE753 hack by default. On modern CPUs (anything more recent from AMD than hammer/k8; Intel: Core2, i3/5/7/9 and similar -- no idea about recent Atom/Pentium) it is a speed pessimization. Add a configure option for it so that it can be enabled on old CPUs.
+                        </font>
+                    </li>
+                    <li>Update to more recent autotools based scripts, this may or may not fix issues during the configure stage for less popular or more recent OS or architectures.
+                    </li>
+                </ul>
+            </li>
         </ul>
         <br>
         <h3>LAME 3.100 &nbsp;October 13 2017</h3>

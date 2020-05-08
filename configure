@@ -807,6 +807,7 @@ enable_libtool_lock
 with_dmalloc
 enable_largefile
 enable_nasm
+enable_ieeehack
 enable_rpath
 with_libiconv_prefix
 enable_cpml
@@ -1472,21 +1473,22 @@ Optional Features:
                           optimize for fast installation [default=yes]
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --disable-largefile     omit support for large files
-  --enable-nasm              Allow the use of nasm if available
+  --enable-nasm           Allow the use of nasm if available
+  --enable-ieeehack       Enable Takhiros IEEE754 hack (speed improvement for old CPUs)
   --disable-rpath         do not hardcode runtime library paths
-  --disable-cpml              Do not use Compaq's fast Math Library
+  --disable-cpml          Do not use Compaq's fast Math Library
   --disable-gtktest       Do not try to compile and run a test GTK program
-  --enable-efence            Use ElectricFence for malloc debugging
-  --disable-analyzer-hooks   Exclude analyzer hooks
-  --disable-decoder          Exclude mpg123 decoder
-  --disable-frontend         Do not build the lame executable default=build
-  --enable-mp3x              Build GTK frame analyzer default=no
-  --enable-mp3rtp            Build mp3rtp default=no
+  --enable-efence         Use ElectricFence for malloc debugging
+  --disable-analyzer-hooks Exclude analyzer hooks
+  --disable-decoder       Exclude mpg123 decoder
+  --disable-frontend      Do not build the lame executable default=build
+  --enable-mp3x           Build GTK frame analyzer default=no
+  --enable-mp3rtp         Build mp3rtp default=no
   --enable-dynamic-frontends Link frontends against shared libraries default=no
-  --enable-expopt=full,norm  Whether to enable experimental optimizations
-                             default=no
-  --enable-debug=alot,norm   Enable debugging (disables optimizations)
-                             default=no
+  --enable-expopt=full,norm Whether to enable experimental optimizations
+                            default=no
+  --enable-debug=alot,norm Enable debugging (disables optimizations)
+                           default=no
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -1505,9 +1507,9 @@ Optional Packages:
   --without-libiconv-prefix     don't search for libiconv in includedir and libdir
   --with-gtk-prefix=PFX   Prefix where GTK is installed (optional)
   --with-gtk-exec-prefix=PFX Exec prefix where GTK is installed (optional)
-  --with-fileio=lame         Use lame's internal file io routines default
-               =sndfile      Use Erik de Castro Lopo's libsndfile
-                             (no stdin possible currently)
+  --with-fileio=lame      Use lame's internal file io routines default
+               =sndfile   Use Erik de Castro Lopo's libsndfile
+                          (no stdin possible currently)
 
 Some influential environment variables:
   CC          C compiler command
@@ -15057,6 +15059,26 @@ else
 fi
 
 
+# Check whether --enable-ieeehack was given.
+if test "${enable_ieeehack+set}" = set; then :
+  enableval=$enable_ieeehack; IEEE754_HACK="yes"
+else
+  IEEE754_HACK="no"
+fi
+
+case ${IEEE754_HACK} in
+	yes)
+
+$as_echo "#define TAKEHIRO_IEEE754_HACK 1" >>confdefs.h
+
+		;;
+	no)
+
+$as_echo "#define TAKEHIRO_IEEE754_HACK 0" >>confdefs.h
+
+		;;
+esac
+
 
 for ac_header in termcap.h
 do :
@@ -17663,9 +17685,6 @@ x86_64|amd64)
 	fi
 
 
-$as_echo "#define TAKEHIRO_IEEE754_HACK 1" >>confdefs.h
-
-
 $as_echo "#define USE_FAST_LOG 1" >>confdefs.h
 
 	;;
@@ -17676,21 +17695,12 @@ $as_echo "#define USE_FAST_LOG 1" >>confdefs.h
 		WITH_VECTOR=yes
 	fi
 
-	# use internal knowledge of the IEEE 754 layout
-
-$as_echo "#define TAKEHIRO_IEEE754_HACK 1" >>confdefs.h
-
 
 $as_echo "#define USE_FAST_LOG 1" >>confdefs.h
 
 	;;
 powerpc)
 	CPUTYPE="no"
-
-	# use internal knowledge of the IEEE 754 layout
-
-$as_echo "#define TAKEHIRO_IEEE754_HACK 1" >>confdefs.h
-
 
 	# The following should not get enabled on a G5. HOWTO check for a G5?
 

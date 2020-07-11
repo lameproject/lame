@@ -91,6 +91,15 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+@LIB_WITH_DECODER_FALSE@am__append_1 = common.c \
+@LIB_WITH_DECODER_FALSE@	dct64_i386.c \
+@LIB_WITH_DECODER_FALSE@	decode_i386.c \
+@LIB_WITH_DECODER_FALSE@	interface.c \
+@LIB_WITH_DECODER_FALSE@	layer1.c \
+@LIB_WITH_DECODER_FALSE@	layer2.c \
+@LIB_WITH_DECODER_FALSE@	layer3.c \
+@LIB_WITH_DECODER_FALSE@	tabinit.c
+
 subdir = mpglib
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
@@ -105,13 +114,18 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libmpgdecoder_la_LIBADD =
-am_libmpgdecoder_la_OBJECTS = common.lo dct64_i386.lo decode_i386.lo \
-	interface.lo layer1.lo layer2.lo layer3.lo tabinit.lo
+am__libmpgdecoder_la_SOURCES_DIST = common.c dct64_i386.c \
+	decode_i386.c interface.c layer1.c layer2.c layer3.c tabinit.c
+@LIB_WITH_DECODER_TRUE@am_libmpgdecoder_la_OBJECTS = common.lo \
+@LIB_WITH_DECODER_TRUE@	dct64_i386.lo decode_i386.lo \
+@LIB_WITH_DECODER_TRUE@	interface.lo layer1.lo layer2.lo \
+@LIB_WITH_DECODER_TRUE@	layer3.lo tabinit.lo
 libmpgdecoder_la_OBJECTS = $(am_libmpgdecoder_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+@LIB_WITH_DECODER_TRUE@am_libmpgdecoder_la_rpath =
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -124,7 +138,6 @@ AM_V_at = $(am__v_at_@AM_V@)
 am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
 am__v_at_0 = @
 am__v_at_1 = 
-DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/common.Plo \
@@ -152,7 +165,7 @@ am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(libmpgdecoder_la_SOURCES)
-DIST_SOURCES = $(libmpgdecoder_la_SOURCES)
+DIST_SOURCES = $(am__libmpgdecoder_la_SOURCES_DIST)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -229,6 +242,7 @@ LD = @LD@
 LDADD = @LDADD@
 LDFLAGS = @LDFLAGS@
 LIBICONV = @LIBICONV@
+LIBMP3LAME_LDADD = @LIBMP3LAME_LDADD@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
@@ -315,6 +329,8 @@ localedir = @localedir@
 localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
+mpg123_CFLAGS = @mpg123_CFLAGS@
+mpg123_LIBS = @mpg123_LIBS@
 oldincludedir = @oldincludedir@
 pdfdir = @pdfdir@
 prefix = @prefix@
@@ -329,19 +345,18 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = 1.15 foreign
-EXTRA_DIST = \
-	AUTHORS \
-	README
-
-noinst_LTLIBRARIES = libmpgdecoder.la
-libmpgdecoder_la_SOURCES = common.c \
-	dct64_i386.c \
-	decode_i386.c \
-	interface.c \
-	layer1.c \
-	layer2.c \
-	layer3.c \
-	tabinit.c
+# Avoid -I. which obscures libmpg123's mpg123.h
+DEFAULT_INCLUDES = 
+EXTRA_DIST = AUTHORS README $(am__append_1)
+@LIB_WITH_DECODER_TRUE@noinst_LTLIBRARIES = libmpgdecoder.la
+@LIB_WITH_DECODER_TRUE@libmpgdecoder_la_SOURCES = common.c \
+@LIB_WITH_DECODER_TRUE@	dct64_i386.c \
+@LIB_WITH_DECODER_TRUE@	decode_i386.c \
+@LIB_WITH_DECODER_TRUE@	interface.c \
+@LIB_WITH_DECODER_TRUE@	layer1.c \
+@LIB_WITH_DECODER_TRUE@	layer2.c \
+@LIB_WITH_DECODER_TRUE@	layer3.c \
+@LIB_WITH_DECODER_TRUE@	tabinit.c
 
 noinst_HEADERS = common.h \
 	dct64_i386.h \
@@ -413,7 +428,7 @@ clean-noinstLTLIBRARIES:
 	}
 
 libmpgdecoder.la: $(libmpgdecoder_la_OBJECTS) $(libmpgdecoder_la_DEPENDENCIES) $(EXTRA_libmpgdecoder_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(LINK)  $(libmpgdecoder_la_OBJECTS) $(libmpgdecoder_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(am_libmpgdecoder_la_rpath) $(libmpgdecoder_la_OBJECTS) $(libmpgdecoder_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)

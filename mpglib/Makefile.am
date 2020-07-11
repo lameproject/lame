@@ -3,6 +3,8 @@
 include $(top_srcdir)/Makefile.am.global
 
 INCLUDES = @INCLUDES@ -I$(top_srcdir)/libmp3lame -I$(top_builddir)
+# Avoid -I. which obscures libmpg123's mpg123.h
+DEFAULT_INCLUDES =
 
 EXTRA_DIST = \
 	AUTHORS \
@@ -10,6 +12,7 @@ EXTRA_DIST = \
 
 DEFS = @DEFS@ @CONFIG_DEFS@
 
+if LIB_WITH_DECODER
 noinst_LTLIBRARIES = libmpgdecoder.la
 
 libmpgdecoder_la_SOURCES = common.c \
@@ -20,6 +23,16 @@ libmpgdecoder_la_SOURCES = common.c \
 	layer2.c \
 	layer3.c \
 	tabinit.c
+else
+EXTRA_DIST += common.c \
+	dct64_i386.c \
+	decode_i386.c \
+	interface.c \
+	layer1.c \
+	layer2.c \
+	layer3.c \
+	tabinit.c
+endif
 
 noinst_HEADERS = common.h \
 	dct64_i386.h \

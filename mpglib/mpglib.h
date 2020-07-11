@@ -21,7 +21,21 @@
 #ifndef _MPGLIB_H_
 #define _MPGLIB_H_
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
 #include "lame.h"
+
+#ifdef HAVE_MPG123
+#include <mpg123.h>
+#ifndef MPG123_API_VERSION
+#error "Seems like you got the wrong mpg123 header. No MPG123_API_VERSION defined."
+#endif
+#if (MPG123_API_VERSION < 45)
+#error "Need mpg123 API >= 45."
+#endif
+#endif
 
 #ifndef plotting_data_defined
 #define plotting_data_defined
@@ -32,6 +46,7 @@ typedef struct plotting_data plotting_data;
 
 extern void lame_report_fnc(lame_report_function f, const char *format, ...);
 
+#ifdef HAVE_MPGLIB
 struct buf {
     unsigned char *pnt;
     long    size;
@@ -47,7 +62,13 @@ struct framebuf {
     struct frame *prev;
 };
 
+#endif
+
 typedef struct mpstr_tag {
+#ifdef HAVE_MPG123
+    mpg123_handle *mh;
+    struct mpg123_moreinfo mi;
+#else
     struct buf *head, *tail; /* buffer linked list pointers, tail points to oldest buffer */
     int     vbr_header;      /* 1 if valid Xing vbr header detected */
     int     num_frames;      /* set if vbr header present */
@@ -79,6 +100,7 @@ typedef struct mpstr_tag {
 
     int     bitindex;
     unsigned char *wordpointer;
+#endif
     plotting_data *pinfo;
 
     lame_report_function report_msg;
@@ -86,11 +108,11 @@ typedef struct mpstr_tag {
     lame_report_function report_err;
 } MPSTR, *PMPSTR;
 
-
+#ifdef HAVE_MPGLIB
 #define MP3_ERR -1
 #define MP3_OK  0
 #define MP3_NEED_MORE 1
-
+#endif
 
 
 #endif /* _MPGLIB_H_ */

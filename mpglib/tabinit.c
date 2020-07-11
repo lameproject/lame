@@ -28,7 +28,7 @@
 
 #include <stdlib.h>
 #include "tabinit.h"
-#include "mpg123.h"
+#include "mpglib/mpg123.h"
 
 #ifdef WITH_DMALLOC
 #include <dmalloc.h>

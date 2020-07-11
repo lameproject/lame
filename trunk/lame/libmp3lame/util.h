@@ -609,6 +609,7 @@ extern  "C" {
     int     is_lame_internal_flags_valid(const lame_internal_flags * gfp);
     
     extern void hip_set_pinfo(hip_t hip, plotting_data* pinfo);
+    extern void hip_finish_pinfo(hip_t hip);
 
 #ifdef __cplusplus
 }

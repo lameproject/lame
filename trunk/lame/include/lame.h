@@ -1049,6 +1049,9 @@ typedef struct {
 
 /* required call to initialize decoder */
 hip_t CDECL hip_decode_init(void);
+/* With that you don't have to care about MP3 encoder/decoder delay
+   anymore. Only available with libmpg123 (returns NULL otherwise). */
+hip_t CDECL hip_decode_init_gapless(void);
 
 /* cleanup call to exit decoder  */
 int CDECL hip_decode_exit(hip_t gfp);

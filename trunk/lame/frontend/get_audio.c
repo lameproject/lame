@@ -58,6 +58,16 @@ char   *strchr(), *strrchr();
 # endif
 #endif
 
+#if defined(HAVE_MPGLIB) || defined(HAVE_MPG123)
+#define hip_global_struct mpstr_tag
+#endif
+#ifdef HAVE_MPG123
+#include <mpg123.h>
+/* for mpstr_tag */
+#include "mpglib/mpglib.h"
+
+#endif
+
 #define         MAX_U_32_NUM            0xFFFFFFFF
 
 
@@ -356,7 +366,10 @@ typedef struct get_audio_global_data_struct {
     unsigned int num_samples_read;
     FILE   *music_in;
     SNDFILE *snd_file;
-    hip_t   hip;
+#ifdef HAVE_MPG123
+    mpg123_handle* mh;
+#endif
+    hip_t     hip;
     PcmBuffer pcm32;
     PcmBuffer pcm16;
     size_t  in_id3v2_size;
@@ -371,6 +384,9 @@ static get_audio_global_data global;
 int     lame_decode_initfile_amiga(const char *fullname, mp3data_struct * const mp3data);
 #else
 int     lame_decode_initfile(FILE * fd, mp3data_struct * mp3data, int *enc_delay, int *enc_padding);
+#endif
+#ifdef HAVE_MPG123
+int     lame123_decode_initfile(FILE * fd, mp3data_struct * mp3data, int *enc_delay, int *enc_padding);
 #endif
 
 /* read mp3 file until mpglib returns one frame of PCM data */
@@ -550,9 +566,22 @@ static void
 setSkipStartAndEnd(lame_t gfp, int enc_delay, int enc_padding)
 {
     int     skip_start = 0, skip_end = 0;
+    long dec_delay = -1;
 
     if (global_decoder.mp3_delay_set)
         skip_start = global_decoder.mp3_delay;
+
+#if 0
+    /* We should ask mpg123 for the delay, but we know it is 529 samples and
+       will not change unless we enable gapless mode. Also, global.hip is not
+       always the correct handle, so avoid this for now. */
+    /* Will use it for layer III only, mpg123 does not deal with layer I and II
+       gapless stuff (yet?) */
+    mpg123_getstate(global.hip->mh, MPG123_DEC_DELAY, &dec_delay, NULL);
+#else
+    if(dec_delay < 0)
+        dec_delay = 528 + 1; /* Same value as above, actually. */
+#endif
 
     switch (global_reader.input_format) {
     case sf_mp123:
@@ -562,16 +591,16 @@ setSkipStartAndEnd(lame_t gfp, int enc_delay, int enc_padding)
         if (skip_start == 0) {
             if (enc_delay > -1 || enc_padding > -1) {
                 if (enc_delay > -1)
-                    skip_start = enc_delay + 528 + 1;
+                    skip_start = enc_delay + dec_delay;
                 if (enc_padding > -1)
-                    skip_end = enc_padding - (528 + 1);
+                    skip_end = enc_padding - dec_delay;
             }
             else
-                skip_start = lame_get_encoder_delay(gfp) + 528 + 1;
+                skip_start = lame_get_encoder_delay(gfp) + dec_delay;
         }
         else {
             /* user specified a value of skip. just add for decoder */
-            skip_start += 528 + 1; /* mp3 decoder has a 528 sample delay, plus user supplied "skip" */
+            skip_start += dec_delay; /* mp3 decoder has a 528 sample delay, plus user supplied "skip" */
         }
         break;
     case sf_mp2:
@@ -658,7 +687,7 @@ samples_to_skip_at_end(void)
 void
 close_infile(void)
 {
-#if defined(HAVE_MPGLIB)
+#if defined(HAVE_MPGLIB) || defined(HAVE_MPG123)
     if (global.hip != 0) {
         hip_decode_exit(global.hip); /* release mp3decoder memory */
         global. hip = 0;
@@ -893,10 +922,42 @@ static int
 read_samples_mp3(lame_t gfp, FILE * musicin, short int mpg123pcm[2][1152])
 {
     int     out;
-#if defined(AMIGA_MPEGA)  ||  defined(HAVE_MPGLIB)
+#ifdef HAVE_MPG123
+    short int *outbuf;
+    size_t outbytes;
+#endif
+#if defined(AMIGA_MPEGA)  ||  defined(HAVE_MPGLIB) || defined(HAVE_MPG123)
     int     samplerate;
     static const char type_name[] = "MP3 file";
 
+#ifdef HAVE_MPG123
+    /* Need to deinterleave so rather use mpg123_decode_frame() to decode the
+       current frame and deinterleave from the internal buffer. */
+    out = mpg123_decode_frame(global.hip->mh, NULL, (unsigned char**)&outbuf, &outbytes);
+    if (out != MPG123_OK && out != MPG123_DONE)
+    {
+        if (out == MPG123_NEW_FORMAT)
+        {
+            if (global_ui_config.silent < 10) {
+                error_printf("Error: format changed in %s - not supported\n",
+                    type_name);
+            }
+        }
+        return -1;
+    }
+    out = outbytes/(sizeof(short)*global_decoder.mp3input_data.stereo);
+    if (global_decoder.mp3input_data.stereo == 2) {
+        int i;
+        for (i=0; i<out; ++i) {
+            mpg123pcm[0][i] = *outbuf++;
+            mpg123pcm[1][i] = *outbuf++;
+        }
+    }
+    else
+        memcpy(mpg123pcm[0], outbuf, sizeof(short)*out);
+    if(global.hip->pinfo)
+        hip_finish_pinfo(global.hip);
+#else
     out = lame_decode_fromfile(musicin, mpg123pcm[0], mpg123pcm[1], &global_decoder.mp3input_data);
     /*
      * out < 0:  error, probably EOF
@@ -925,6 +986,7 @@ read_samples_mp3(lame_t gfp, FILE * musicin, short int mpg123pcm[2][1152])
         }
         out = -1;
     }
+#endif
 #else
     out = -1;
 #endif
@@ -1791,6 +1853,14 @@ parse_file_header(lame_global_flags * gfp, FILE * sf)
 static int
 open_mpeg_file_part2(lame_t gfp, FILE* musicin, char const *inPath, int *enc_delay, int *enc_padding)
 {
+#ifdef HAVE_MPG123
+    if (-1 == lame123_decode_initfile(musicin, &global_decoder.mp3input_data, enc_delay, enc_padding)) {
+        if (global_ui_config.silent < 10) {
+            error_printf("Error opening MPEG input file %s.\n", inPath);
+        }
+        return 0;
+    }
+#else
 #ifdef HAVE_MPGLIB
     if (-1 == lame_decode_initfile(musicin, &global_decoder.mp3input_data, enc_delay, enc_padding)) {
         if (global_ui_config.silent < 10) {
@@ -1798,6 +1868,7 @@ open_mpeg_file_part2(lame_t gfp, FILE* musicin, char const *inPath, int *enc_del
         }
         return 0;
     }
+#endif
 #endif
     if (!set_input_num_channels(gfp, global_decoder.mp3input_data.stereo)) {
         return 0;
@@ -2022,7 +2093,98 @@ lenOfId3v2Tag(unsigned char const* buf)
     unsigned int b3 = buf[3] & 127;
     return (((((b0 << 7) + b1) << 7) + b2) << 7) + b3;
 }
+#endif
 
+#ifdef HAVE_MPG123
+#define CHECK123(code) if(MPG123_OK != (code)) return -1
+
+int lame123_decode_initfile(FILE *fd, mp3data_struct *mp3data, int *enc_delay, int *enc_padding)
+{
+    off_t len;
+    unsigned char *id3buf;
+    size_t id3size;
+    struct mpg123_frameinfo fi;
+    long rate, val;
+    int channels;
+
+    mpg123_init();
+    memset(mp3data, 0, sizeof(mp3data_struct));
+    if (global.hip) {
+        hip_decode_exit(global.hip);
+    }
+    global. hip = hip_decode_init();
+    if(!global.hip->mh)
+        return -1;
+    /* TODO: enforce float format ... optionally be careful for builds
+       that only know 16 bit output. */
+    mpg123_param(global.hip->mh, MPG123_ADD_FLAGS, MPG123_STORE_RAW_ID3, 0.);
+    mpg123_param(global.hip->mh, MPG123_ADD_FLAGS, MPG123_QUIET, 0.);
+    mpg123_format_none(global.hip->mh);
+    /* TODO: switch to MPG123_ENC_FLOAT_32, always! */
+    CHECK123(mpg123_format2(global.hip->mh,
+        0, MPG123_MONO|MPG123_STEREO, MPG123_ENC_SIGNED_16));
+    /* TODO: verboseness / silence set up */
+    CHECK123(mpg123_open_fd(global.hip->mh, fileno(fd)));
+    /* Seek to get past Info frame and ID3v2. */
+    CHECK123(mpg123_seek(global.hip->mh, SEEK_SET, 0));
+    /* TODO: Figure out if MPG123_GAPLESS is desired or not. */
+    /* Guessing seems to be OK, so we do not have to insist on knowing
+       if libmpg123 got that info from Info tag or not. */
+    /* I am paranoid about off_t being larger than long or int. */
+    len = mpg123_framelength(global.hip->mh);
+    if(len <= (unsigned long)-1)
+        mp3data->totalframes = len;
+    else
+        return -1;
+    len = mpg123_length(global.hip->mh);
+    if(len <= ((unsigned int)-1)/2)
+        mp3data->nsamp = len;
+    else
+        return -1;
+    /* Encoder delay and padding are not needed when libmpg123 handles gapless
+       decoding itself. So let's see if we get away with that. */
+    mpg123_getstate(global.hip->mh, MPG123_ENC_DELAY, &val, NULL);
+    *enc_delay = val;
+    mpg123_getstate(global.hip->mh, MPG123_ENC_PADDING, &val, NULL);
+    *enc_padding = val;
+    if(global.in_id3v2_tag)
+        free(global.in_id3v2_tag);
+    global.in_id3v2_size = 0;
+    if( MPG123_OK == mpg123_id3_raw(global.hip->mh, NULL, NULL,
+        &id3buf, &id3size) && id3buf && id3size ) {
+        global.in_id3v2_tag = malloc(id3size);
+        if(global.in_id3v2_tag) {
+            memcpy(global.in_id3v2_tag, id3buf, id3size);
+            global.in_id3v2_size = id3size;
+        }
+    }
+    CHECK123(mpg123_info(global.hip->mh, &fi));
+    CHECK123(mpg123_getformat(global.hip->mh, &rate, &channels, NULL));
+    /* How much of this is actually needed for the frontend? */
+    mp3data->header_parsed = 1;
+    mp3data->stereo = channels; /* Channel count correct? Or is dual mono different? */
+    mp3data->samplerate = rate;
+    mp3data->mode = fi.mode;
+    mp3data->mode_ext = fi.mode_ext;
+    mp3data->framesize = mpg123_spf(global.hip->mh);
+    mp3data->bitrate = fi.bitrate;
+    if(global_reader.input_format == sf_mp123) switch(fi.layer) {
+        case 1:
+            global_reader.input_format = sf_mp1;
+        break;
+        case 2:
+            global_reader.input_format = sf_mp2;
+        break;
+        case 3:
+            global_reader.input_format = sf_mp3;
+        break;
+    }
+
+    return 0;
+}
+#endif
+
+#ifdef HAVE_MPGLIB
 int
 lame_decode_initfile(FILE * fd, mp3data_struct * mp3data, int *enc_delay, int *enc_padding)
 {

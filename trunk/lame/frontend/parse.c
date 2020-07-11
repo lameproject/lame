@@ -2558,7 +2558,7 @@ parse_args_(lame_global_flags * gfp, int argc, char **argv,
     if (global_reader.input_format == sf_unknown)
         global_reader.input_format = filename_to_type(inPath);
 
-#if !(defined HAVE_MPGLIB || defined AMIGA_MPEGA)
+#if !(defined HAVE_MPGLIB || defined AMIGA_MPEGA || HAVE_MPG123)
     if (is_mpeg_file_format(global_reader.input_format)) {
         error_printf("Error: libmp3lame not compiled with mpg123 *decoding* support \n");
         return -1;

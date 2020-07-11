@@ -22,7 +22,7 @@
 #ifndef MPGLIB_TABINIT_H_INCLUDED
 #define MPGLIB_TABINIT_H_INCLUDED
 
-#include "mpg123.h"
+#include "mpglib/mpg123.h"
 
 extern real decwin[512 + 32];
 extern real *pnts[5];

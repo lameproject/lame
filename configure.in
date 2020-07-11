@@ -17,6 +17,9 @@ dnl FRONTEND_LDFLAGS
 dnl FRONTEND_CFLAGS
 dnl FRONTEND_LDADD
 
+dnl extra vars for libmp3lame:
+dnl LIBMP3LAME_LDADD
+
 AC_PREREQ(2.69)
 AC_INIT([lame],[3.100],[lame-dev@lists.sf.net])
 AC_CONFIG_SRCDIR([libmp3lame/lame.c])
@@ -35,6 +38,7 @@ AH_TOP([
 AH_BOTTOM([#endif /* LAME_CONFIG_H */])
 AM_MAINTAINER_MODE
 AM_MAKE_INCLUDE
+PKG_PROG_PKG_CONFIG([])
 
 dnl check environment
 AC_AIX
@@ -545,20 +549,44 @@ AC_MSG_RESULT($CONFIG_ANALYZER)
 
 
 dnl mpg123 decoder
+PKG_CHECK_MODULES([mpg123], [libmpg123 >= 1.26.0], [HAVE_MPG123="yes"], [HAVE_MPG123="no"])
+
 AC_MSG_CHECKING(use of mpg123 decoder)
 AC_ARG_ENABLE(decoder,
-  [  --disable-decoder       Exclude mpg123 decoder],
+  [  --disable-decoder          Exclude mpg123 decoder (internal or external)],
   CONFIG_DECODER="${enableval}", CONFIG_DECODER="yes")
+AC_ARG_ENABLE(libmpg123,
+  [  --disable-libmpg123        Disable use of external libmpg123 decoder (normally favoured over internal decoder)],
+  CONFIG_MPG123="${enableval}", CONFIG_MPG123="auto")
 
-AM_CONDITIONAL(LIB_WITH_DECODER, test "x${CONFIG_DECODER}" = "xyes")
-
-if test "${CONFIG_DECODER}" != "no" ; then
-	CONFIG_DECODER="yes (Layer 1, 2, 3)"
-	AC_DEFINE(HAVE_MPGLIB, 1, build with mpglib support)
-	AC_DEFINE(DECODE_ON_THE_FLY, 1, allow to compute a more accurate replaygain value)
+if test "${CONFIG_MPG123}" = "yes" && ! test "${HAVE_MPG123}" = "yes"; then
+	AC_MSG_ERROR([libmpg123 decoder enforced but not found])
 fi
-AC_MSG_RESULT($CONFIG_DECODER)
+if test "${CONFIG_MPG123}" = "auto" && test "${HAVE_MPG123}" = "yes"; then
+	CONFIG_MPG123="yes"
+fi
 
+LIB_WITH_DECODER=false
+if test "${CONFIG_MPG123}" = "yes" && test "${CONFIG_DECODER}" != "no"; then
+	CONFIG_DECODER="no"
+	AC_MSG_RESULT(enabled use of external libmpg123 decoder)
+	AC_DEFINE(HAVE_MPG123, 1, set to 1 if you have libmpg123)
+	AC_DEFINE(DECODE_ON_THE_FLY, 1, allow to compute a more accurate replaygain value)
+	FRONTEND_LDADD="$mpg123_LIBS $FRONTEND_LDADD"
+	LIBMP3LAME_LDADD="$mpg123_LIBS $LIBMP3LAME_LDADD"
+	INCLUDES="$mpg123_CFLAGS $INCLUDES"
+else
+	if test "${CONFIG_DECODER}" != "no" ; then
+		LIB_WITH_DECODER=true
+		CONFIG_DECODER="internal mpglib decoder (Layer 1, 2, 3)"
+		AC_MSG_RESULT($CONFIG_DECODER)
+		AC_DEFINE(HAVE_MPGLIB, 1, build with mpglib support)
+		AC_DEFINE(DECODE_ON_THE_FLY, 1, allow to compute a more accurate replaygain value)
+	else
+		AC_MSG_RESULT($CONFIG_DECODER)
+	fi
+fi
+AM_CONDITIONAL(LIB_WITH_DECODER, ${LIB_WITH_DECODER})
 
 AC_MSG_CHECKING(if the lame frontend should be build)
 AC_ARG_ENABLE(frontend,
@@ -1224,6 +1252,7 @@ AC_SUBST(INCLUDES)
 AC_SUBST(FRONTEND_LDFLAGS)
 AC_SUBST(FRONTEND_CFLAGS)
 AC_SUBST(FRONTEND_LDADD)
+AC_SUBST(LIBMP3LAME_LDADD)
 AC_SUBST(CONFIG_MATH_LIB)
 AC_SUBST(LDADD)
 

@@ -302,7 +302,7 @@ GREP = @GREP@
 GTK_CFLAGS = @GTK_CFLAGS@
 GTK_CONFIG = @GTK_CONFIG@
 GTK_LIBS = @GTK_LIBS@
-INCLUDES = @INCLUDES@ -I$(top_srcdir)/mpglib -I$(top_builddir)
+INCLUDES = @INCLUDES@ -I$(top_srcdir) -I$(top_builddir)
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -312,6 +312,7 @@ LD = @LD@
 LDADD = @LDADD@
 LDFLAGS = @LDFLAGS@
 LIBICONV = @LIBICONV@
+LIBMP3LAME_LDADD = @LIBMP3LAME_LDADD@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
@@ -398,6 +399,8 @@ localedir = @localedir@
 localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
+mpg123_CFLAGS = @mpg123_CFLAGS@
+mpg123_LIBS = @mpg123_LIBS@
 oldincludedir = @oldincludedir@
 pdfdir = @pdfdir@
 prefix = @prefix@
@@ -419,7 +422,7 @@ lib_LTLIBRARIES = libmp3lame.la
 @LIB_WITH_DECODER_FALSE@decoder_ldadd = 
 @LIB_WITH_DECODER_TRUE@decoder_ldadd = $(top_builddir)/mpglib/libmpgdecoder.la
 libmp3lame_la_LIBADD = $(cpu_ldadd) $(vector_ldadd) $(decoder_ldadd) \
-			$(CONFIG_MATH_LIB)
+			@LIBMP3LAME_LDADD@ $(CONFIG_MATH_LIB)
 
 libmp3lame_la_LDFLAGS = -version-info @LIB_MAJOR_VERSION@:@LIB_MINOR_VERSION@ \
 			-export-symbols $(top_srcdir)/include/libmp3lame.sym \

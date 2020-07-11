@@ -649,6 +649,7 @@ LIB_MINOR_VERSION
 LIB_MAJOR_VERSION
 LDADD
 CONFIG_MATH_LIB
+LIBMP3LAME_LDADD
 FRONTEND_LDADD
 FRONTEND_CFLAGS
 FRONTEND_LDFLAGS
@@ -662,11 +663,10 @@ WITH_XMM_FALSE
 WITH_XMM_TRUE
 LIB_WITH_DECODER_FALSE
 LIB_WITH_DECODER_TRUE
+mpg123_LIBS
+mpg123_CFLAGS
 SNDFILE_LIBS
 SNDFILE_CFLAGS
-PKG_CONFIG_LIBDIR
-PKG_CONFIG_PATH
-PKG_CONFIG
 GTK_LIBS
 GTK_CFLAGS
 GTK_CONFIG
@@ -712,6 +712,9 @@ CPPFLAGS
 LDFLAGS
 CFLAGS
 CC
+PKG_CONFIG_LIBDIR
+PKG_CONFIG_PATH
+PKG_CONFIG
 am__include
 MAINT
 MAINTAINER_MODE_FALSE
@@ -818,6 +821,7 @@ enable_efence
 with_fileio
 enable_analyzer_hooks
 enable_decoder
+enable_libmpg123
 enable_frontend
 enable_mp3x
 enable_mp3rtp
@@ -828,6 +832,9 @@ enable_debug
       ac_precious_vars='build_alias
 host_alias
 target_alias
+PKG_CONFIG
+PKG_CONFIG_PATH
+PKG_CONFIG_LIBDIR
 CC
 CFLAGS
 LDFLAGS
@@ -835,11 +842,10 @@ LIBS
 CPPFLAGS
 CPP
 LT_SYS_LIBRARY_PATH
-PKG_CONFIG
-PKG_CONFIG_PATH
-PKG_CONFIG_LIBDIR
 SNDFILE_CFLAGS
-SNDFILE_LIBS'
+SNDFILE_LIBS
+mpg123_CFLAGS
+mpg123_LIBS'
 
 
 # Initialize some variables set by options.
@@ -1480,7 +1486,8 @@ Optional Features:
   --disable-gtktest       Do not try to compile and run a test GTK program
   --enable-efence         Use ElectricFence for malloc debugging
   --disable-analyzer-hooks Exclude analyzer hooks
-  --disable-decoder       Exclude mpg123 decoder
+  --disable-decoder          Exclude mpg123 decoder (internal or external)
+  --disable-libmpg123        Disable use of external libmpg123 decoder (normally favoured over internal decoder)
   --disable-frontend      Do not build the lame executable default=build
   --enable-mp3x           Build GTK frame analyzer default=no
   --enable-mp3rtp         Build mp3rtp default=no
@@ -1512,6 +1519,11 @@ Optional Packages:
                           (no stdin possible currently)
 
 Some influential environment variables:
+  PKG_CONFIG  path to pkg-config utility
+  PKG_CONFIG_PATH
+              directories to add to pkg-config's search path
+  PKG_CONFIG_LIBDIR
+              path overriding pkg-config's built-in search path
   CC          C compiler command
   CFLAGS      C compiler flags
   LDFLAGS     linker flags, e.g. -L<lib dir> if you have libraries in a
@@ -1522,15 +1534,13 @@ Some influential environment variables:
   CPP         C preprocessor
   LT_SYS_LIBRARY_PATH
               User-defined run-time library search path.
-  PKG_CONFIG  path to pkg-config utility
-  PKG_CONFIG_PATH
-              directories to add to pkg-config's search path
-  PKG_CONFIG_LIBDIR
-              path overriding pkg-config's built-in search path
   SNDFILE_CFLAGS
               C compiler flags for SNDFILE, overriding pkg-config
   SNDFILE_LIBS
               linker flags for SNDFILE, overriding pkg-config
+  mpg123_CFLAGS
+              C compiler flags for mpg123, overriding pkg-config
+  mpg123_LIBS linker flags for mpg123, overriding pkg-config
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -3307,6 +3317,126 @@ rm -f confinc.* confmf.*
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${_am_result}" >&5
 $as_echo "${_am_result}" >&6; }
 
+
+
+
+
+
+
+
+if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
+	if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
+set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_PKG_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+PKG_CONFIG=$ac_cv_path_PKG_CONFIG
+if test -n "$PKG_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
+$as_echo "$PKG_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_path_PKG_CONFIG"; then
+  ac_pt_PKG_CONFIG=$PKG_CONFIG
+  # Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_ac_pt_PKG_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $ac_pt_PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_ac_pt_PKG_CONFIG="$ac_pt_PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_ac_pt_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+ac_pt_PKG_CONFIG=$ac_cv_path_ac_pt_PKG_CONFIG
+if test -n "$ac_pt_PKG_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_pt_PKG_CONFIG" >&5
+$as_echo "$ac_pt_PKG_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+  if test "x$ac_pt_PKG_CONFIG" = x; then
+    PKG_CONFIG=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    PKG_CONFIG=$ac_pt_PKG_CONFIG
+  fi
+else
+  PKG_CONFIG="$ac_cv_path_PKG_CONFIG"
+fi
+
+fi
+if test -n "$PKG_CONFIG"; then
+	_pkg_min_version=0.9.0
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking pkg-config is at least version $_pkg_min_version" >&5
+$as_echo_n "checking pkg-config is at least version $_pkg_min_version... " >&6; }
+	if $PKG_CONFIG --atleast-pkgconfig-version $_pkg_min_version; then
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	else
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+		PKG_CONFIG=""
+	fi
+fi
 
 DEPDIR="${am__leading_dot}deps"
 
@@ -17187,126 +17317,6 @@ fi
 
 if test "${CONFIG_FILEIO}" = "sndfile" ; then
 
-
-
-
-
-
-
-if test "x$ac_cv_env_PKG_CONFIG_set" != "xset"; then
-	if test -n "$ac_tool_prefix"; then
-  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
-set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_path_PKG_CONFIG+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  case $PKG_CONFIG in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_path_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  ;;
-esac
-fi
-PKG_CONFIG=$ac_cv_path_PKG_CONFIG
-if test -n "$PKG_CONFIG"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
-$as_echo "$PKG_CONFIG" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-fi
-if test -z "$ac_cv_path_PKG_CONFIG"; then
-  ac_pt_PKG_CONFIG=$PKG_CONFIG
-  # Extract the first word of "pkg-config", so it can be a program name with args.
-set dummy pkg-config; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_path_ac_pt_PKG_CONFIG+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  case $ac_pt_PKG_CONFIG in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_ac_pt_PKG_CONFIG="$ac_pt_PKG_CONFIG" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_path_ac_pt_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  ;;
-esac
-fi
-ac_pt_PKG_CONFIG=$ac_cv_path_ac_pt_PKG_CONFIG
-if test -n "$ac_pt_PKG_CONFIG"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_pt_PKG_CONFIG" >&5
-$as_echo "$ac_pt_PKG_CONFIG" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-  if test "x$ac_pt_PKG_CONFIG" = x; then
-    PKG_CONFIG=""
-  else
-    case $cross_compiling:$ac_tool_warned in
-yes:)
-{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
-$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
-ac_tool_warned=yes ;;
-esac
-    PKG_CONFIG=$ac_pt_PKG_CONFIG
-  fi
-else
-  PKG_CONFIG="$ac_cv_path_PKG_CONFIG"
-fi
-
-fi
-if test -n "$PKG_CONFIG"; then
-	_pkg_min_version=0.9.0
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking pkg-config is at least version $_pkg_min_version" >&5
-$as_echo_n "checking pkg-config is at least version $_pkg_min_version... " >&6; }
-	if $PKG_CONFIG --atleast-pkgconfig-version $_pkg_min_version; then
-		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-	else
-		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-		PKG_CONFIG=""
-	fi
-fi
-
 pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for SNDFILE" >&5
 $as_echo_n "checking for SNDFILE... " >&6; }
@@ -17442,6 +17452,78 @@ esac
 $as_echo "$CONFIG_ANALYZER" >&6; }
 
 
+
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for mpg123" >&5
+$as_echo_n "checking for mpg123... " >&6; }
+
+if test -n "$mpg123_CFLAGS"; then
+    pkg_cv_mpg123_CFLAGS="$mpg123_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libmpg123 >= 1.26.0\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libmpg123 >= 1.26.0") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_mpg123_CFLAGS=`$PKG_CONFIG --cflags "libmpg123 >= 1.26.0" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$mpg123_LIBS"; then
+    pkg_cv_mpg123_LIBS="$mpg123_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libmpg123 >= 1.26.0\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libmpg123 >= 1.26.0") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_mpg123_LIBS=`$PKG_CONFIG --libs "libmpg123 >= 1.26.0" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        mpg123_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libmpg123 >= 1.26.0" 2>&1`
+        else
+	        mpg123_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libmpg123 >= 1.26.0" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$mpg123_PKG_ERRORS" >&5
+
+	HAVE_MPG123="no"
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	HAVE_MPG123="no"
+else
+	mpg123_CFLAGS=$pkg_cv_mpg123_CFLAGS
+	mpg123_LIBS=$pkg_cv_mpg123_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	HAVE_MPG123="yes"
+fi
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking use of mpg123 decoder" >&5
 $as_echo_n "checking use of mpg123 decoder... " >&6; }
 # Check whether --enable-decoder was given.
@@ -17451,27 +17533,59 @@ else
   CONFIG_DECODER="yes"
 fi
 
-
- if test "x${CONFIG_DECODER}" = "xyes"; then
-  LIB_WITH_DECODER_TRUE=
-  LIB_WITH_DECODER_FALSE='#'
+# Check whether --enable-libmpg123 was given.
+if test "${enable_libmpg123+set}" = set; then :
+  enableval=$enable_libmpg123; CONFIG_MPG123="${enableval}"
 else
-  LIB_WITH_DECODER_TRUE='#'
-  LIB_WITH_DECODER_FALSE=
+  CONFIG_MPG123="auto"
 fi
 
 
-if test "${CONFIG_DECODER}" != "no" ; then
-	CONFIG_DECODER="yes (Layer 1, 2, 3)"
+if test "${CONFIG_MPG123}" = "yes" && ! test "${HAVE_MPG123}" = "yes"; then
+	as_fn_error $? "libmpg123 decoder enforced but not found" "$LINENO" 5
+fi
+if test "${CONFIG_MPG123}" = "auto" && test "${HAVE_MPG123}" = "yes"; then
+	CONFIG_MPG123="yes"
+fi
+
+LIB_WITH_DECODER=false
+if test "${CONFIG_MPG123}" = "yes" && test "${CONFIG_DECODER}" != "no"; then
+	CONFIG_DECODER="no"
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: enabled use of external libmpg123 decoder" >&5
+$as_echo "enabled use of external libmpg123 decoder" >&6; }
+
+$as_echo "#define HAVE_MPG123 1" >>confdefs.h
+
+
+$as_echo "#define DECODE_ON_THE_FLY 1" >>confdefs.h
+
+	FRONTEND_LDADD="$mpg123_LIBS $FRONTEND_LDADD"
+	LIBMP3LAME_LDADD="$mpg123_LIBS $LIBMP3LAME_LDADD"
+	INCLUDES="$mpg123_CFLAGS $INCLUDES"
+else
+	if test "${CONFIG_DECODER}" != "no" ; then
+		LIB_WITH_DECODER=true
+		CONFIG_DECODER="internal mpglib decoder (Layer 1, 2, 3)"
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $CONFIG_DECODER" >&5
+$as_echo "$CONFIG_DECODER" >&6; }
 
 $as_echo "#define HAVE_MPGLIB 1" >>confdefs.h
 
 
 $as_echo "#define DECODE_ON_THE_FLY 1" >>confdefs.h
 
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $CONFIG_DECODER" >&5
+	else
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $CONFIG_DECODER" >&5
 $as_echo "$CONFIG_DECODER" >&6; }
+	fi
+fi
+ if ${LIB_WITH_DECODER}; then
+  LIB_WITH_DECODER_TRUE=
+  LIB_WITH_DECODER_FALSE='#'
+else
+  LIB_WITH_DECODER_TRUE='#'
+  LIB_WITH_DECODER_FALSE=
+fi
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking if the lame frontend should be build" >&5
@@ -18298,6 +18412,7 @@ CFLAGS="${OPTIMIZATION} ${CFLAGS}"
 LDADD="${LDADD}"
 FRONTEND_CFLAGS="${INCICONV} ${FRONTEND_CFLAGS}"
 FRONTEND_LDADD="${FRONTEND_LDADD} ${LTLIBICONV} ${CONFIG_MATH_LIB}"
+
 
 
 

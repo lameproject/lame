@@ -2098,6 +2098,25 @@ lenOfId3v2Tag(unsigned char const* buf)
 #ifdef HAVE_MPG123
 #define CHECK123(code) if(MPG123_OK != (code)) return -1
 
+#ifdef _WIN32
+static ssize_t lame123_read_from_file(void* handle, void* buffer, size_t size)
+{
+   return fread(buffer, 1, size, (FILE*)handle);
+}
+
+static off_t lame123_seek_in_file(void* handle, off_t offset, int direction)
+{
+   if (fseek((FILE*)handle, offset, direction) != 0)
+      return (off_t)-1;
+   return ftell((FILE*)handle);
+}
+
+static void lame123_cleanup_file(void* handle)
+{
+   fclose((FILE*)handle);
+}
+#endif
+
 int lame123_decode_initfile(FILE *fd, mp3data_struct *mp3data, int *enc_delay, int *enc_padding)
 {
     off_t len;
@@ -2124,7 +2143,17 @@ int lame123_decode_initfile(FILE *fd, mp3data_struct *mp3data, int *enc_delay, i
     CHECK123(mpg123_format2(global.hip->mh,
         0, MPG123_MONO|MPG123_STEREO, MPG123_ENC_SIGNED_16));
     /* TODO: verboseness / silence set up */
+#ifdef _WIN32
+    /* On Win32 compiles it can happen that lame.exe and libmp3lame.dll use
+       different C++ runtimes, which maintail different FILE* lists, and
+       fileno() would produce invalid file numbers for those msvcrt instances.
+       So use mpg123_replace_reader_handle() / mpg123_open_handle() here
+       instead of mpg123_open_fd(). */
+    CHECK123(mpg123_replace_reader_handle(global.hip->mh, lame123_read_from_file, lame123_seek_in_file, lame123_cleanup_file));
+    CHECK123(mpg123_open_handle(global.hip->mh, fd));
+#else
     CHECK123(mpg123_open_fd(global.hip->mh, fileno(fd)));
+#endif
     /* Seek to get past Info frame and ID3v2. */
     CHECK123(mpg123_seek(global.hip->mh, SEEK_SET, 0));
     /* TODO: Figure out if MPG123_GAPLESS is desired or not. */

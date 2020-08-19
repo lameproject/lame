@@ -249,12 +249,7 @@ LPARAM lParam  // second message parameter
 
 				if (bUrl)
 				{
-					LPSTR tmpStr;
-					HRESULT hresult = ::TranslateURL(Url, TRANSLATEURL_FL_GUESS_PROTOCOL|TRANSLATEURL_FL_GUESS_PROTOCOL, &tmpStr);
-					if (hresult == S_OK)
-						::ShellExecute(hwndDlg,"open",tmpStr,NULL,"",SW_SHOWMAXIMIZED );
-					else if (hresult == S_FALSE)
-						::ShellExecute(hwndDlg,"open",Url,NULL,"",SW_SHOWMAXIMIZED );
+					::ShellExecute(hwndDlg,"open",Url,NULL,"",SW_SHOWMAXIMIZED );
 				}
 
 			}

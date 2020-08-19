@@ -906,9 +906,9 @@ typedef struct {
 const decoder_t  decoder [] = {
     { ".mp1"    , PATH"mpg123 -w - %s"                         REDIR },  // MPEG Layer I         : www.iis.fhg.de, www.mpeg.org
     { ".mp2"    , PATH"mpg123 -w - %s"                         REDIR },  // MPEG Layer II        : www.iis.fhg.de, www.uq.net.au/~zzmcheng, www.mpeg.org
-    { ".mp3"    , PATH"mpg123 -w - %s"                         REDIR },  // MPEG Layer III       : www.iis.fhg.de, www.mp3dev.org, www.mpeg.org
-    { ".mp3pro" , PATH"mpg123 -w - %s"                         REDIR },  // MPEG Layer III       : www.iis.fhg.de, www.mp3dev.org, www.mpeg.org
-    { ".mpt"    , PATH"mpg123 -w - %s"                         REDIR },  // MPEG Layer III       : www.iis.fhg.de, www.mp3dev.org, www.mpeg.org
+    { ".mp3"    , PATH"mpg123 -w - %s"                         REDIR },  // MPEG Layer III       : www.iis.fhg.de, lame.sourceforge.io, www.mpeg.org
+    { ".mp3pro" , PATH"mpg123 -w - %s"                         REDIR },  // MPEG Layer III       : www.iis.fhg.de, lame.sourceforge.io, www.mpeg.org
+    { ".mpt"    , PATH"mpg123 -w - %s"                         REDIR },  // MPEG Layer III       : www.iis.fhg.de, lame.sourceforge.io, www.mpeg.org
     { ".mpp"    , PATH"mppdec %s -"                            REDIR },  // MPEGplus             : www.stud.uni-hannover.de/user/73884
     { ".mpc"    , PATH"mppdec %s -"                            REDIR },  // MPEGplus             : www.stud.uni-hannover.de/user/73884
     { ".mp+"    , PATH"mppdec %s -"                            REDIR },  // MPEGplus             : www.stud.uni-hannover.de/user/73884

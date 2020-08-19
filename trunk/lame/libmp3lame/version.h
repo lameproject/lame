@@ -31,7 +31,7 @@
 # define STR(x)    __STR(x)
 #endif
 
-# define LAME_URL              "http://lame.sf.net"
+# define LAME_URL              "https://lame.sourceforge.io"
 
 
 # define LAME_MAJOR_VERSION      3 /* Major version number */

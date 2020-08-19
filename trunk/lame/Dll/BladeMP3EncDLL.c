@@ -678,7 +678,7 @@ __declspec(dllexport) VOID		beVersion(PBE_VERSION pbeVersion)
 
     memset( pbeVersion->zHomepage, 0x00, BE_MAX_HOMEPAGE );
 
-    strcpy( pbeVersion->zHomepage, "http://www.mp3dev.org/" );
+    strcpy( pbeVersion->zHomepage, "https://lame.sourceforge.io/" );
 }
 
 __declspec(dllexport) BE_ERR	beEncodeChunk(HBE_STREAM hbeStream, DWORD nSamples, 

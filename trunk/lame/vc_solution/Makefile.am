@@ -3,24 +3,36 @@
 include $(top_srcdir)/Makefile.am.global
 
 EXTRA_DIST = \
-	arch_nasm.vsprops \
-	arch_sse2.vsprops \
-	arch_x87.vsprops \
-	vc9_lame_acm_adbg.vcproj \
-	vc9_lame_acm_tinyxml.vcproj \
-	vc9_lame_acm.vcproj \
-	vc9_lame_clients.sln \
-	vc9_lame_config.vsprops \
-	vc9_lame_dll_example.vcproj \
-	vc9_lame_dll.vcproj \
-	vc9_lame_dshow.vcproj \
-	vc9_lame_lame.vcproj \
-	vc9_lame_mp3rtp.vcproj \
-	vc9_lame_mp3x.vcproj \
-	vc9_lame_test.vcproj \
-	vc9_lame.sln \
-	vc9_libmp3lame_dll.vcproj \
-	vc9_libmp3lame.vcproj \
-	vc9_mpglib.vcproj \
-	vc9_nasm.rules
-
+	README.vs2019.txt \
+	vs2019_arch_nasm.props \
+	vs2019_arch_sse2.props \
+	vs2019_arch_x87.props \
+	vs2019_gtk_config.props \
+	vs2019_lame_acm_adbg.vcxproj \
+	vs2019_lame_acm_adbg.vcxproj.filters \
+	vs2019_lame_acm_tinyxml.vcxproj \
+	vs2019_lame_acm.vcxproj \
+	vs2019_lame_acm.vcxproj.filters \
+	vs2019_lame_clients.sln \
+	vs2019_lame_config.props \
+	vs2019_lame_dshow.vcxproj \
+	vs2019_lame_dshow.vcxproj.filters \
+	vs2019_lame_enc_dll.vcxproj \
+	vs2019_lame_enc_dll.vcxproj.filters \
+	vs2019_lame_lame.vcxproj \
+	vs2019_lame_lame.vcxproj.filters \
+	vs2019_lame_mp3rtp.vcxproj \
+	vs2019_lame_mp3rtp.vcxproj.filters \
+	vs2019_lame_mp3x.vcxproj \
+	vs2019_lame_mp3x.vcxproj.filters \
+	vs2019_lame_test.vcxproj \
+	vs2019_lame.sln \
+	vs2019_libmp3lame_dll.vcxproj \
+	vs2019_libmp3lame.vcxproj \
+	vs2019_libmp3lame.vcxproj.filters \
+	vs2019_libmpg123_config.props \
+	vs2019_libsndfile_config.props \
+	vs2019_nasm.props \
+	vs2019_nasm.targets \
+	vs2019_nasm.xml \
+	vs2019_win71sdk_config.props

@@ -29,6 +29,13 @@ compile different flavors of LAME libraries and executables:
 - ReleaseNASM: Uses NASM (see below) to compile some routines using NASM
 - ReleaseSSE2: Uses SSE2 assembler instructions to optimize routines
 
+The vs2019_lame.sln solution has both Win32 and x64 platforms configured, in
+order to compile lame.exe and the libmp3lame.dll for 32-bit or 64-bit target
+platforms. The output folder also has separate folders for the two platforms.
+Note that mp3rtp and mp3x are not compiled in x64. Also note that all 64-bit
+processors have SSE2 instructions, so the /arch:SSE2 option is ignored for
+this platform.
+
 ## External libraries and tools
 
 For some projects, external libraries or tools are necessary for successful
@@ -70,11 +77,17 @@ following  two user macro parameters:
 As described above, you can also use the Property Manager view to change the
 values.
 
+Note that when compiling for the x64 platform, you have to use the 64-bit
+version of libsndfile. Alternatively you can use the `HaveLibsndfile` as is
+(the default value is `.\libsndfile\$(Platform)\`) and extract the zip
+archives for 32-bit and 64-bit into the "vc_solution\libsndfile\Win32\" and
+"vc_solution\libsndfile\x64\" folders.
+
 ### mpg123
 
 From LAME version 3.100.1 on, LAME supports decoding using the external mpg123
 library, which is a mature fork of the internally used mpglib library. The
-latest binaries for Win32 are available here:
+latest binaries for Win32 and x64 are available here:
 https://mpg123.de/
 
 Open the file "lame/vc_solution/vs2019_libmpg123_config.props" and edit the
@@ -91,6 +104,12 @@ following  two user macro parameters:
 As described above, you can also use the Property Manager view to change the
 values.
 
+Note that when compiling for the x64 platform, you have to use the 64-bit
+version of libmpg123. Alternatively you can use the `HaveMpg123` as is
+(the default value is `.\mpg123\$(Platform)\`) and extract the zip
+archives for 32-bit and 64-bit into the "vc_solution\mpg123\Win32\" and
+"vc_solution\mpg123\x64\" folders.
+
 ### GTK1
 
 The mp3x graphical frame analyzer uses GTK1 for the user interface. One of the
@@ -104,6 +123,8 @@ first few lines of the file, ending the path with a backslash.
 
 As described above, you can also use the Property Manager view to change the
 values.
+
+Note that compiling mp3x for 64-bit platforms is currently not available.
 
 ### Windows SDK 7.1
 

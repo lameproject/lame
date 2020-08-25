@@ -183,6 +183,7 @@ lame_get_lametag_frame
 lame_close
 lame_encode_finish
 hip_decode_init
+hip_decode_init_gapless
 hip_decode_exit
 hip_set_errorf
 hip_set_debugf

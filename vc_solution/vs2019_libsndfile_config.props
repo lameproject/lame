@@ -3,7 +3,7 @@
   <PropertyGroup Label="UserMacros">
     <!-- libsndfile configuration; set to true and adjust path, ending with a backslash -->
     <HaveLibsndfile>false</HaveLibsndfile>
-    <LibsndfilePath>.\libsndfile\</LibsndfilePath>
+    <LibsndfilePath>.\libsndfile\$(Platform)\</LibsndfilePath>
   </PropertyGroup>
   <ItemGroup>
     <BuildMacro Include="HaveLibsndfile">

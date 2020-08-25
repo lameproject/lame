@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <OutDir>$(SolutionDir)..\output\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)..\obj\$(Configuration)\$(ProjectName)\</IntDir>
+    <OutDir>$(SolutionDir)..\output\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)..\obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup>

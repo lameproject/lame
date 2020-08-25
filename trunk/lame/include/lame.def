@@ -271,6 +271,7 @@ hip_decode1_headersB	@1106
 hip_set_debugf	@1107
 hip_set_errorf	@1108
 hip_set_msgf	@1109
+hip_decode_init_gapless	@1110
 
 id3tag_genre_list	@2000
 id3tag_init   		@2001

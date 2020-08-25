@@ -2113,7 +2113,7 @@ static off_t lame123_seek_in_file(void* handle, off_t offset, int direction)
 
 static void lame123_cleanup_file(void* handle)
 {
-   fclose((FILE*)handle);
+   /* don't call fclose(); close_input_file() will do that */
 }
 #endif
 
